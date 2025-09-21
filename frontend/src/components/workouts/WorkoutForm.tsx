@@ -32,13 +32,14 @@ export const WorkoutForm = ({ workout, exercises, onSubmit }: WorkoutFormProps) 
   useEffect(() => {
     if (workout) {
       try {
-        // Ensure we have a valid date
-        const date = new Date(workout.date);
-        if (isNaN(date.getTime())) {
-          // If date is invalid, use current date/time
-          console.warn('Invalid date in workout, using current date/time');
-          date = new Date();
-        }
+        // Create date from the array format [year, month, day, hour, minute]
+        const date = new Date(
+          workout.date[0],
+          workout.date[1] - 1, // JavaScript months are 0-based
+          workout.date[2],
+          workout.date[3],
+          workout.date[4]
+        );
         
         setFormData({
           date: date.toISOString().slice(0, 16),

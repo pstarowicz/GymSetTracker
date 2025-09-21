@@ -78,7 +78,9 @@ export const WorkoutsPage = () => {
       console.log('Loading workouts for page:', page);
       const response = await workoutService.getWorkouts(page);
       console.log('Received workouts:', response.data);
-      setWorkouts(response.data.content);
+      const workouts = response.data.content;
+      console.log('Sample workout date:', workouts[0]?.date);
+      setWorkouts(workouts);
     } catch (error) {
       console.error('Failed to load workouts:', error);
     } finally {
@@ -154,7 +156,11 @@ export const WorkoutsPage = () => {
                       primary={
                         <Box display="flex" alignItems="center">
                           <Typography variant="h6" style={{ marginRight: '8px' }}>
-                            {new Date(workout.date).toLocaleDateString(undefined, { 
+                            {new Date(
+                              workout.date[0], 
+                              workout.date[1] - 1, // JavaScript months are 0-based
+                              workout.date[2]
+                            ).toLocaleDateString(undefined, { 
                               weekday: 'long',
                               year: 'numeric', 
                               month: 'long', 
@@ -167,7 +173,13 @@ export const WorkoutsPage = () => {
                       secondary={
                         <Box>
                           <Typography variant="body2" color="text.secondary">
-                            Time: {new Date(workout.date).toLocaleTimeString(undefined, {
+                            Time: {new Date(
+                              workout.date[0], 
+                              workout.date[1] - 1, // JavaScript months are 0-based
+                              workout.date[2],
+                              workout.date[3],
+                              workout.date[4]
+                            ).toLocaleTimeString(undefined, {
                               hour: '2-digit',
                               minute: '2-digit'
                             })}

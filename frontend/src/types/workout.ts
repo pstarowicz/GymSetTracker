@@ -3,7 +3,7 @@ import { Exercise } from './exercise';
 export interface Workout {
     id: number;
     userId: number;
-    date: string;
+    date: number[];
     duration?: number;
     notes?: string;
     createdAt: string;

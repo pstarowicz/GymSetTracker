@@ -13,6 +13,7 @@ public class JacksonConfig {
     public ObjectMapper objectMapper() {
         return Jackson2ObjectMapperBuilder.json()
             .featuresToEnable(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
+            .modules(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule())
             .build();
     }
 }
