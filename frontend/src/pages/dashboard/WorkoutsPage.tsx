@@ -29,6 +29,15 @@ import { Exercise } from '@/types/exercise';
 import { exerciseService } from '@/services/exercise.service';
 import { WorkoutForm } from '@/components/workouts/WorkoutForm';
 
+interface GroupedSet {
+  exerciseName: string;
+  sets: Array<{
+    id: number;
+    weight: number;
+    reps: number;
+  }>;
+}
+
 export const WorkoutsPage = () => {
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [exercises, setExercises] = useState<Exercise[]>([]);
@@ -37,6 +46,26 @@ export const WorkoutsPage = () => {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
   const [expandedWorkoutId, setExpandedWorkoutId] = useState<number | null>(null);
+
+  const groupSetsByExercise = (sets: any[] = []): GroupedSet[] => {
+    const grouped = sets.reduce((acc: { [key: string]: GroupedSet }, set) => {
+      const exerciseName = set.exercise?.name || 'Unknown exercise';
+      if (!acc[exerciseName]) {
+        acc[exerciseName] = {
+          exerciseName,
+          sets: []
+        };
+      }
+      acc[exerciseName].sets.push({
+        id: set.id,
+        weight: set.weight || 0,
+        reps: set.reps || 0
+      });
+      return acc;
+    }, {});
+    
+    return Object.values(grouped);
+  };
 
   useEffect(() => {
     loadWorkouts();
@@ -179,16 +208,21 @@ export const WorkoutsPage = () => {
                         <TableHead>
                           <TableRow>
                             <TableCell>Exercise</TableCell>
-                            <TableCell align="right">Weight (kg)</TableCell>
-                            <TableCell align="right">Reps</TableCell>
+                            <TableCell align="right">Sets (Weight × Reps)</TableCell>
                           </TableRow>
                         </TableHead>
                         <TableBody>
-                          {workout.sets?.map((set) => (
-                            <TableRow key={set.id}>
-                              <TableCell>{set.exercise?.name || 'Unknown exercise'}</TableCell>
-                              <TableCell align="right">{set.weight || 0}</TableCell>
-                              <TableCell align="right">{set.reps || 0}</TableCell>
+                          {groupSetsByExercise(workout.sets).map((groupedSet) => (
+                            <TableRow key={groupedSet.exerciseName}>
+                              <TableCell>{groupedSet.exerciseName}</TableCell>
+                              <TableCell align="right">
+                                {groupedSet.sets.map((set, index) => (
+                                  <span key={set.id}>
+                                    {index > 0 ? ' | ' : ''}
+                                    {set.weight}kg × {set.reps}
+                                  </span>
+                                ))}
+                              </TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
