@@ -9,12 +9,12 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Grid,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemSecondaryAction,
   IconButton,
-  TextField,
-  Card,
-  CardContent,
-  CardActions
+  Divider
 } from '@mui/material';
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { workoutService } from '@/services/workout.service';
@@ -101,67 +101,74 @@ export const WorkoutsPage = () => {
       ) : workouts.length === 0 ? (
         <Typography>No workouts found. Create your first workout!</Typography>
       ) : (
-        <Grid container spacing={3}>
-          {workouts.map((workout) => (
-          <Grid item xs={12} sm={6} md={4} key={workout.id}>
-            <Card 
-              sx={{ 
-                cursor: 'pointer',
-                '&:hover': {
-                  boxShadow: 6
-                }
-              }}
-              onClick={() => navigate(`/workouts/${workout.id}`)}
-            >
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  {new Date(workout.date).toLocaleDateString(undefined, { 
-                    weekday: 'long',
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  })}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Time: {new Date(workout.date).toLocaleTimeString(undefined, {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Duration: {workout.duration || 0} minutes
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Sets: {workout.sets?.length || 0}
-                </Typography>
-                {workout.notes && (
-                  <Typography variant="body2" mt={1}>
-                    Notes: {workout.notes}
-                  </Typography>
-                )}
-              </CardContent>
-              <CardActions>
-                <IconButton 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleEditWorkout(workout);
+        <Paper elevation={2}>
+          <List>
+            {workouts.map((workout, index) => (
+              <>
+                {index > 0 && <Divider />}
+                <ListItem
+                  key={workout.id}
+                  sx={{ 
+                    cursor: 'pointer',
+                    '&:hover': {
+                      backgroundColor: 'rgba(0, 0, 0, 0.04)'
+                    }
                   }}
+                  onClick={() => navigate(`/workouts/${workout.id}`)}
                 >
-                  <EditIcon />
-                </IconButton>
-                <IconButton 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteWorkout(workout.id);
-                  }}
-                >
-                  <DeleteIcon />
-                </IconButton>
-              </CardActions>
-            </Card>
-          </Grid>
-        ))}
-        </Grid>
+                  <ListItemText
+                    primary={
+                      <Typography variant="h6">
+                        {new Date(workout.date).toLocaleDateString(undefined, { 
+                          weekday: 'long',
+                          year: 'numeric', 
+                          month: 'long', 
+                          day: 'numeric' 
+                        })}
+                      </Typography>
+                    }
+                    secondary={
+                      <Box>
+                        <Typography variant="body2" color="text.secondary">
+                          Time: {new Date(workout.date).toLocaleTimeString(undefined, {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Duration: {workout.duration || 0} minutes | Sets: {workout.sets?.length || 0}
+                        </Typography>
+                        {workout.notes && (
+                          <Typography variant="body2" color="text.secondary">
+                            Notes: {workout.notes}
+                          </Typography>
+                        )}
+                      </Box>
+                    }
+                  />
+                  <ListItemSecondaryAction>
+                    <IconButton 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditWorkout(workout);
+                      }}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteWorkout(workout.id);
+                      }}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </ListItemSecondaryAction>
+                </ListItem>
+              </>
+            ))}
+          </List>
+        </Paper>
       )}
 
       {/* Workout Form Dialog will be implemented next */}
