@@ -14,9 +14,15 @@ import {
   ListItemText,
   ListItemSecondaryAction,
   IconButton,
-  Divider
+  Divider,
+  Collapse,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow
 } from '@mui/material';
-import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import { workoutService } from '@/services/workout.service';
 import { Workout, WorkoutRequest } from '@/types/workout';
 import { Exercise } from '@/types/exercise';
@@ -24,14 +30,13 @@ import { exerciseService } from '@/services/exercise.service';
 import { WorkoutForm } from '@/components/workouts/WorkoutForm';
 
 export const WorkoutsPage = () => {
-  const navigate = useNavigate();
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
-  const [totalElements, setTotalElements] = useState(0);
+  const [expandedWorkoutId, setExpandedWorkoutId] = useState<number | null>(null);
 
   useEffect(() => {
     loadWorkouts();
@@ -45,7 +50,6 @@ export const WorkoutsPage = () => {
       const response = await workoutService.getWorkouts(page);
       console.log('Received workouts:', response.data);
       setWorkouts(response.data.content);
-      setTotalElements(response.data.totalElements);
     } catch (error) {
       console.error('Failed to load workouts:', error);
     } finally {
@@ -106,65 +110,92 @@ export const WorkoutsPage = () => {
             {workouts.map((workout, index) => (
               <>
                 {index > 0 && <Divider />}
-                <ListItem
-                  key={workout.id}
-                  sx={{ 
-                    cursor: 'pointer',
-                    '&:hover': {
-                      backgroundColor: 'rgba(0, 0, 0, 0.04)'
-                    }
-                  }}
-                  onClick={() => navigate(`/workouts/${workout.id}`)}
-                >
-                  <ListItemText
-                    primary={
-                      <Typography variant="h6">
-                        {new Date(workout.date).toLocaleDateString(undefined, { 
-                          weekday: 'long',
-                          year: 'numeric', 
-                          month: 'long', 
-                          day: 'numeric' 
-                        })}
-                      </Typography>
-                    }
-                    secondary={
-                      <Box>
-                        <Typography variant="body2" color="text.secondary">
-                          Time: {new Date(workout.date).toLocaleTimeString(undefined, {
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Duration: {workout.duration || 0} minutes | Sets: {workout.sets?.length || 0}
-                        </Typography>
-                        {workout.notes && (
-                          <Typography variant="body2" color="text.secondary">
-                            Notes: {workout.notes}
+                <>
+                  <ListItem
+                    key={workout.id}
+                    sx={{ 
+                      cursor: 'pointer',
+                      '&:hover': {
+                        backgroundColor: 'rgba(0, 0, 0, 0.04)'
+                      }
+                    }}
+                    onClick={() => setExpandedWorkoutId(expandedWorkoutId === workout.id ? null : workout.id)}
+                  >
+                    <ListItemText
+                      primary={
+                        <Box display="flex" alignItems="center">
+                          <Typography variant="h6" style={{ marginRight: '8px' }}>
+                            {new Date(workout.date).toLocaleDateString(undefined, { 
+                              weekday: 'long',
+                              year: 'numeric', 
+                              month: 'long', 
+                              day: 'numeric' 
+                            })}
                           </Typography>
-                        )}
-                      </Box>
-                    }
-                  />
-                  <ListItemSecondaryAction>
-                    <IconButton 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEditWorkout(workout);
-                      }}
-                    >
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteWorkout(workout.id);
-                      }}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </ListItemSecondaryAction>
-                </ListItem>
+                          {expandedWorkoutId === workout.id ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
+                        </Box>
+                      }
+                      secondary={
+                        <Box>
+                          <Typography variant="body2" color="text.secondary">
+                            Time: {new Date(workout.date).toLocaleTimeString(undefined, {
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Duration: {workout.duration || 0} minutes | Sets: {workout.sets?.length || 0}
+                          </Typography>
+                          {workout.notes && (
+                            <Typography variant="body2" color="text.secondary">
+                              Notes: {workout.notes}
+                            </Typography>
+                          )}
+                        </Box>
+                      }
+                    />
+                    <ListItemSecondaryAction>
+                      <IconButton 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditWorkout(workout);
+                        }}
+                      >
+                        <EditIcon />
+                      </IconButton>
+                      <IconButton 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteWorkout(workout.id);
+                        }}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </ListItemSecondaryAction>
+                  </ListItem>
+                  <Collapse in={expandedWorkoutId === workout.id} timeout="auto" unmountOnExit>
+                    <Box sx={{ px: 2, pb: 2 }}>
+                      <Table size="small">
+                        <TableHead>
+                          <TableRow>
+                            <TableCell>Exercise</TableCell>
+                            <TableCell align="right">Weight (kg)</TableCell>
+                            <TableCell align="right">Reps</TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {workout.sets?.map((set) => (
+                            <TableRow key={set.id}>
+                              <TableCell>{set.exercise?.name || 'Unknown exercise'}</TableCell>
+                              <TableCell align="right">{set.weight || 0}</TableCell>
+                              <TableCell align="right">{set.reps || 0}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </Box>
+                  </Collapse>
+                </>
               </>
             ))}
           </List>

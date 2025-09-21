@@ -14,10 +14,6 @@ export const workoutService = {
     );
   },
 
-  getWorkout: (id: number) => {
-    return axiosInstance.get<Workout>(`${BASE_URL}/${id}`);
-  },
-
   updateWorkout: (id: number, workout: WorkoutRequest) => {
     return axiosInstance.put<Workout>(`${BASE_URL}/${id}`, workout);
   },
