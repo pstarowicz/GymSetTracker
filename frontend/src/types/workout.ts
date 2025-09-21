@@ -1,13 +1,14 @@
 import { Exercise } from './exercise';
 
 export interface Workout {
-    id: number;
-    userId: number;
+    id?: number;
+    userId?: number;
     date: number[];
     duration?: number;
     notes?: string;
-    createdAt: string;
+    createdAt?: string;
     sets?: WorkoutSet[];
+    isNew?: boolean;
 }
 
 export interface WorkoutSet {

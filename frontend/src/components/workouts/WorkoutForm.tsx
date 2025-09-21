@@ -37,12 +37,15 @@ export const WorkoutForm = ({ workout, exercises, onSubmit }: WorkoutFormProps) 
           workout.date[0],
           workout.date[1] - 1, // JavaScript months are 0-based
           workout.date[2],
-          workout.date[3],
-          workout.date[4]
+          workout.date[3] || 0,
+          workout.date[4] || 0
         );
+
+        // Format the date as YYYY-MM-DDThh:mm
+        const formattedDate = date.toISOString().slice(0, 16);
         
         setFormData({
-          date: date.toISOString().slice(0, 16),
+          date: formattedDate,
           duration: workout.duration || 0,
           notes: workout.notes || '',
           sets: workout.sets?.map(set => ({
@@ -241,7 +244,7 @@ export const WorkoutForm = ({ workout, exercises, onSubmit }: WorkoutFormProps) 
 
       <Box sx={{ mt: 4 }}>
         <Button type="submit" variant="contained" fullWidth>
-          {workout ? 'Update Workout' : 'Create Workout'}
+          {workout && !workout.isNew ? 'Update Workout' : 'Create Workout'}
         </Button>
       </Box>
     </Box>

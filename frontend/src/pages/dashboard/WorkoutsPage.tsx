@@ -22,7 +22,7 @@ import {
   TableHead,
   TableRow
 } from '@mui/material';
-import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
+import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, KeyboardArrowDown, KeyboardArrowUp, ContentCopy as CopyIcon } from '@mui/icons-material';
 import { workoutService } from '@/services/workout.service';
 import { Workout, WorkoutRequest } from '@/types/workout';
 import { Exercise } from '@/types/exercise';
@@ -104,6 +104,30 @@ export const WorkoutsPage = () => {
 
   const handleEditWorkout = (workout: Workout) => {
     setSelectedWorkout(workout);
+    setOpenDialog(true);
+  };
+
+  const handleCopyWorkout = (workout: Workout) => {
+    // Create a new workout object based on the selected one
+    // but without the id and with current date
+    const now = new Date();
+    const workoutCopy = {
+      ...workout,
+      id: undefined,
+      date: [
+        now.getFullYear(),
+        now.getMonth() + 1,
+        now.getDate(),
+        now.getHours(),
+        now.getMinutes()
+      ],
+      sets: workout.sets?.map(set => ({
+        ...set,
+        id: undefined,
+        workoutId: undefined
+      }))
+    };
+    setSelectedWorkout({ ...workoutCopy, isNew: true }); // Add isNew flag
     setOpenDialog(true);
   };
 
@@ -207,6 +231,15 @@ export const WorkoutsPage = () => {
                       <IconButton 
                         onClick={(e) => {
                           e.stopPropagation();
+                          handleCopyWorkout(workout);
+                        }}
+                        color="primary"
+                      >
+                        <CopyIcon />
+                      </IconButton>
+                      <IconButton 
+                        onClick={(e) => {
+                          e.stopPropagation();
                           handleDeleteWorkout(workout.id);
                         }}
                       >
@@ -256,7 +289,7 @@ export const WorkoutsPage = () => {
         fullWidth
       >
         <DialogTitle>
-          {selectedWorkout ? 'Edit Workout' : 'New Workout'}
+          {selectedWorkout ? (selectedWorkout.id ? 'Edit Workout' : 'Copy Workout') : 'New Workout'}
         </DialogTitle>
         <DialogContent>
           <WorkoutForm
@@ -264,9 +297,11 @@ export const WorkoutsPage = () => {
             exercises={exercises}
             onSubmit={async (workoutData) => {
               try {
-                if (selectedWorkout) {
+                // If workout exists and is not a copy (has an id and not marked as new), update it
+                if (selectedWorkout && selectedWorkout.id && !selectedWorkout.isNew) {
                   await workoutService.updateWorkout(selectedWorkout.id, workoutData);
                 } else {
+                  // Otherwise create a new workout
                   await workoutService.createWorkout(workoutData);
                 }
                 loadWorkouts();
