@@ -38,11 +38,11 @@
 - [x] Exercises page:
   - [x] List of available exercises
   - [x] Add/Edit/Delete exercise functionality
-- [ ] Workouts page:
-  - [ ] Create new workout form
-  - [ ] Add sets to workout
-  - [ ] View workout history
-  - [ ] Edit/Delete workouts
+- [x] Workouts page:
+  - [x] Create new workout form
+  - [x] Add sets to workout
+  - [x] View workout history
+  - [x] Edit/Delete workouts
 - [ ] Personal Records page:
   - [ ] Display PRs for each exercise
   - [ ] Automatic PR tracking

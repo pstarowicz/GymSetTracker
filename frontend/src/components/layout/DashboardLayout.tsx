@@ -27,18 +27,20 @@ import {
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 
-const drawerWidth = 240;
+const drawerWidth = 280;
 
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
   open?: boolean;
 }>(({ theme, open }) => ({
   flexGrow: 1,
-  padding: theme.spacing(3),
+  padding: theme.spacing(4),
+  backgroundColor: theme.palette.background.default,
   transition: theme.transitions.create('margin', {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
   }),
   marginLeft: 0,
+  minHeight: '100vh',
   ...(open && {
     transition: theme.transitions.create('margin', {
       easing: theme.transitions.easing.easeOut,
@@ -82,24 +84,49 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.leavingScreen,
           }),
+          height: 70,
+          display: 'flex',
+          justifyContent: 'center',
         }}
       >
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            edge="start"
-            onClick={handleDrawerToggle}
-            sx={{ mr: 2 }}
-          >
-            {open ? <ChevronLeft /> : <MenuIcon />}
-          </IconButton>
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            GymSetTracker
-          </Typography>
-          <Typography variant="body1" sx={{ mr: 2 }}>
-            {user?.name}
-          </Typography>
+        <Toolbar sx={{ width: '100%', justifyContent: 'space-between' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={handleDrawerToggle}
+              sx={{ mr: 2 }}
+            >
+              {open ? <ChevronLeft /> : <MenuIcon />}
+            </IconButton>
+            <Typography 
+              variant="h6" 
+              noWrap 
+              component="div" 
+              sx={{ 
+                fontWeight: 600,
+                background: 'linear-gradient(45deg, #2563eb 30%, #4f46e5 90%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              GymSetTracker
+            </Typography>
+          </Box>
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 1,
+            backgroundColor: 'rgba(37, 99, 235, 0.08)',
+            borderRadius: 2,
+            padding: '6px 12px',
+          }}>
+            <AccountCircle sx={{ color: 'primary.main' }} />
+            <Typography variant="body1" sx={{ fontWeight: 500 }}>
+              {user?.name}
+            </Typography>
+          </Box>
         </Toolbar>
       </AppBar>
 
@@ -110,6 +137,8 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           '& .MuiDrawer-paper': {
             width: drawerWidth,
             boxSizing: 'border-box',
+            padding: theme.spacing(2),
+            paddingTop: 0,
           },
         }}
         variant={isMobile ? 'temporary' : 'persistent'}
@@ -117,27 +146,59 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         open={open}
         onClose={handleDrawerToggle}
       >
-        <Toolbar />
-        <Divider />
+        <Toolbar sx={{ height: 70 }} />
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="overline" color="text.secondary" sx={{ px: 2 }}>
+            MENU
+          </Typography>
+        </Box>
         <List>
           {menuItems.map((item) => (
             <ListItem key={item.text} disablePadding>
               <ListItemButton
                 selected={location.pathname === item.path}
                 onClick={() => navigate(item.path)}
+                sx={{
+                  py: 1.5,
+                  px: 2,
+                }}
               >
-                <ListItemIcon>{item.icon}</ListItemIcon>
-                <ListItemText primary={item.text} />
+                <ListItemIcon sx={{ 
+                  color: location.pathname === item.path ? 'primary.main' : 'text.secondary',
+                  minWidth: 40,
+                }}>
+                  {item.icon}
+                </ListItemIcon>
+                <ListItemText 
+                  primary={item.text}
+                  primaryTypographyProps={{
+                    fontWeight: location.pathname === item.path ? 600 : 400,
+                  }}
+                />
               </ListItemButton>
             </ListItem>
           ))}
-          <Divider />
-          <ListItem disablePadding>
-            <ListItemButton onClick={logout}>
-              <ListItemIcon>
+          <Box sx={{ mt: 2 }}>
+            <Divider />
+          </Box>
+          <ListItem disablePadding sx={{ mt: 2 }}>
+            <ListItemButton 
+              onClick={logout}
+              sx={{
+                py: 1.5,
+                px: 2,
+                color: 'error.main',
+              }}
+            >
+              <ListItemIcon sx={{ color: 'inherit', minWidth: 40 }}>
                 <AccountCircle />
               </ListItemIcon>
-              <ListItemText primary="Logout" />
+              <ListItemText 
+                primary="Logout" 
+                primaryTypographyProps={{
+                  fontWeight: 500,
+                }}
+              />
             </ListItemButton>
           </ListItem>
         </List>
