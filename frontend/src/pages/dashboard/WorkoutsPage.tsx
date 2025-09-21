@@ -47,6 +47,25 @@ export const WorkoutsPage = () => {
   const [page, setPage] = useState(0);
   const [expandedWorkoutId, setExpandedWorkoutId] = useState<number | null>(null);
 
+  // Custom styles for the workout page
+  const styles = {
+    container: {
+      maxWidth: '1200px',
+      margin: '0 auto',
+      width: '100%',
+      padding: '0 24px',
+    },
+    workoutList: {
+      margin: '24px 0',
+    },
+    setsList: {
+      '& .MuiTableCell-root': {
+        fontSize: '1.05rem',
+        padding: '12px 16px',
+      },
+    },
+  };
+
   const groupSetsByExercise = (sets: any[] = []): GroupedSet[] => {
     const grouped = sets.reduce((acc: { [key: string]: GroupedSet }, set) => {
       const exerciseName = set.exercise?.name || 'Unknown exercise';
@@ -144,13 +163,14 @@ export const WorkoutsPage = () => {
   };
 
   return (
-    <Box>
+    <Box sx={styles.container}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4">Workouts</Typography>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
           onClick={handleCreateWorkout}
+          size="large"
         >
           New Workout
         </Button>
@@ -161,7 +181,7 @@ export const WorkoutsPage = () => {
       ) : workouts.length === 0 ? (
         <Typography>No workouts found. Create your first workout!</Typography>
       ) : (
-        <Paper elevation={2}>
+        <Paper elevation={2} sx={styles.workoutList}>
           <List>
             {workouts.map((workout, index) => (
               <div key={workout.id}>
@@ -258,23 +278,49 @@ export const WorkoutsPage = () => {
                   </ListItem>
                   <Collapse in={expandedWorkoutId === workout.id} timeout="auto" unmountOnExit>
                     <Box sx={{ px: 2, pb: 2 }}>
-                      <Table size="small">
+                      <Table size="medium" sx={styles.setsList}>
                         <TableHead>
                           <TableRow>
-                            <TableCell>Exercise</TableCell>
-                            <TableCell align="right">Sets (Weight × Reps)</TableCell>
+                            <TableCell 
+                              sx={{ 
+                                fontWeight: 600,
+                                fontSize: '1.1rem !important'
+                              }}
+                            >
+                              Exercise
+                            </TableCell>
+                            <TableCell 
+                              align="right"
+                              sx={{ 
+                                fontWeight: 600,
+                                fontSize: '1.1rem !important'
+                              }}
+                            >
+                              Sets (Weight × Reps)
+                            </TableCell>
                           </TableRow>
                         </TableHead>
                         <TableBody>
                           {groupSetsByExercise(workout.sets).map((groupedSet) => (
                             <TableRow key={groupedSet.exerciseName}>
-                              <TableCell>{groupedSet.exerciseName}</TableCell>
+                              <TableCell sx={{ fontWeight: 500 }}>{groupedSet.exerciseName}</TableCell>
                               <TableCell align="right">
                                 {groupedSet.sets.map((set, index) => (
-                                  <span key={set.id}>
-                                    {index > 0 ? ' | ' : ''}
+                                  <Box 
+                                    component="span" 
+                                    key={set.id}
+                                    sx={{
+                                      display: 'inline-block',
+                                      bgcolor: 'rgba(37, 99, 235, 0.08)',
+                                      px: 1.5,
+                                      py: 0.5,
+                                      borderRadius: 1,
+                                      ml: index > 0 ? 1 : 0,
+                                      fontWeight: 500,
+                                    }}
+                                  >
                                     {set.weight}kg × {set.reps}
-                                  </span>
+                                  </Box>
                                 ))}
                               </TableCell>
                             </TableRow>

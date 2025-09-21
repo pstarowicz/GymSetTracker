@@ -35,12 +35,23 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
   flexGrow: 1,
   padding: theme.spacing(4),
   backgroundColor: theme.palette.background.default,
-  transition: theme.transitions.create('margin', {
+  minHeight: '100vh',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  width: '100%',
+  maxWidth: '100%',
+  transition: theme.transitions.create(['margin', 'width'], {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
   }),
-  marginLeft: 0,
-  minHeight: '100vh',
+  ...(open && {
+    marginLeft: drawerWidth,
+    transition: theme.transitions.create(['margin', 'width'], {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+  }),
   ...(open && {
     transition: theme.transitions.create('margin', {
       easing: theme.transitions.easing.easeOut,
@@ -62,7 +73,7 @@ interface DashboardLayoutProps {
 }
 
 export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const navigate = useNavigate();
@@ -79,7 +90,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         position="fixed"
         sx={{
           width: { sm: `calc(100% - ${open ? drawerWidth : 0}px)` },
-          ml: { sm: `${open ? drawerWidth : 0}px` },
+          ml: { sm: open ? `${drawerWidth}px` : 0 },
           transition: theme.transitions.create(['margin', 'width'], {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.leavingScreen,
@@ -87,6 +98,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           height: 70,
           display: 'flex',
           justifyContent: 'center',
+          zIndex: theme.zIndex.drawer + 1,
         }}
       >
         <Toolbar sx={{ width: '100%', justifyContent: 'space-between' }}>
@@ -139,6 +151,8 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             boxSizing: 'border-box',
             padding: theme.spacing(2),
             paddingTop: 0,
+            border: 'none',
+            backgroundColor: theme.palette.background.default,
           },
         }}
         variant={isMobile ? 'temporary' : 'persistent'}

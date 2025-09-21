@@ -38,6 +38,19 @@ export const ExercisesPage = () => {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [open, setOpen] = useState(false);
   const [editingExercise, setEditingExercise] = useState<Exercise | null>(null);
+  
+  const styles = {
+    container: {
+      maxWidth: '1200px',
+      margin: '0 auto',
+      width: '100%',
+      padding: '0 24px',
+    },
+    tableContainer: {
+      margin: '24px 0',
+    },
+  };
+  
   const [formData, setFormData] = useState({
     name: '',
     muscleGroup: '',
@@ -113,10 +126,16 @@ export const ExercisesPage = () => {
   };
 
   return (
-    <Box>
+    <Box sx={styles.container}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4">Exercises</Typography>
-        <Button variant="contained" color="primary" onClick={() => handleOpen()}>
+        <Button 
+          variant="contained" 
+          color="primary" 
+          onClick={() => handleOpen()}
+          size="large"
+          startIcon={<EditIcon />}
+        >
           Add Exercise
         </Button>
       </Box>
@@ -127,32 +146,51 @@ export const ExercisesPage = () => {
         </Typography>
       )}
 
-      <TableContainer component={Paper}>
+      <TableContainer component={Paper} sx={styles.tableContainer}>
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell>Muscle Group</TableCell>
-              <TableCell>Type</TableCell>
-              <TableCell align="right">Actions</TableCell>
+              <TableCell sx={{ fontSize: '1.1rem', fontWeight: 600 }}>Name</TableCell>
+              <TableCell sx={{ fontSize: '1.1rem', fontWeight: 600 }}>Muscle Group</TableCell>
+              <TableCell sx={{ fontSize: '1.1rem', fontWeight: 600 }}>Type</TableCell>
+              <TableCell sx={{ fontSize: '1.1rem', fontWeight: 600 }} align="right">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {exercises.map((exercise) => (
               <TableRow key={exercise.id}>
-                <TableCell>{exercise.name}</TableCell>
-                <TableCell>{exercise.muscleGroup}</TableCell>
-                <TableCell>{exercise.isCustom ? 'Custom' : 'Default'}</TableCell>
+                <TableCell sx={{ fontSize: '1.05rem' }}>{exercise.name}</TableCell>
+                <TableCell sx={{ fontSize: '1.05rem' }}>{exercise.muscleGroup}</TableCell>
+                <TableCell sx={{ fontSize: '1.05rem' }}>
+                  <Box
+                    component="span"
+                    sx={{
+                      px: 1.5,
+                      py: 0.5,
+                      borderRadius: 1,
+                      bgcolor: exercise.isCustom ? 'primary.light' : 'secondary.light',
+                      color: '#fff',
+                      fontSize: '0.9rem',
+                      fontWeight: 500,
+                    }}
+                  >
+                    {exercise.isCustom ? 'Custom' : 'Default'}
+                  </Box>
+                </TableCell>
                 <TableCell align="right">
                   <IconButton 
                     onClick={() => handleOpen(exercise)}
                     disabled={!exercise.isCustom}
+                    color="primary"
+                    size="large"
                   >
                     <EditIcon />
                   </IconButton>
                   <IconButton 
                     onClick={() => handleDelete(exercise.id)}
                     disabled={!exercise.isCustom}
+                    color="error"
+                    size="large"
                   >
                     <DeleteIcon />
                   </IconButton>
