@@ -11,7 +11,7 @@ import {
   Select,
   MenuItem,
 } from '@mui/material';
-import { Delete as DeleteIcon, Add as AddIcon } from '@mui/icons-material';
+import { Add as AddIcon, Delete as DeleteIcon, ContentCopy as CopyIcon } from '@mui/icons-material';
 import { WorkoutRequest, WorkoutSetRequest, Workout } from '@/types/workout';
 import { Exercise } from '@/types/exercise';
 
@@ -88,18 +88,23 @@ export const WorkoutForm = ({ workout, exercises, onSubmit }: WorkoutFormProps) 
   };
 
   const addSet = () => {
-    setFormData(prev => ({
-      ...prev,
-      sets: [
-        ...prev.sets,
-        {
-          exerciseId: exercises[0]?.id || 0,
-          reps: 0,
-          weight: 0,
-          setNumber: prev.sets.length + 1,
-        },
-      ],
-    }));
+    setFormData(prev => {
+      const lastSet = prev.sets[prev.sets.length - 1];
+      const defaultExerciseId = lastSet ? lastSet.exerciseId : exercises[0]?.id || 0;
+      
+      return {
+        ...prev,
+        sets: [
+          ...prev.sets,
+          {
+            exerciseId: defaultExerciseId,
+            reps: 0,
+            weight: 0,
+            setNumber: prev.sets.length + 1,
+          },
+        ],
+      };
+    });
   };
 
   const removeSet = (index: number) => {
@@ -186,9 +191,42 @@ export const WorkoutForm = ({ workout, exercises, onSubmit }: WorkoutFormProps) 
               onChange={(e) => handleSetChange(index, 'weight', parseInt(e.target.value))}
               sx={{ width: 100 }}
             />
-            <IconButton onClick={() => removeSet(index)} color="error">
-              <DeleteIcon />
-            </IconButton>
+            <Box>
+              <IconButton
+                onClick={() => {
+                  setFormData(prev => {
+                    const newSet = {
+                      exerciseId: prev.sets[index].exerciseId,
+                      reps: prev.sets[index].reps,
+                      weight: prev.sets[index].weight,
+                      setNumber: prev.sets[index].setNumber + 1,
+                    };
+                    
+                    // Insert the new set after the current one and update all following set numbers
+                    const updatedSets = [
+                      ...prev.sets.slice(0, index + 1),
+                      newSet,
+                      ...prev.sets.slice(index + 1).map(set => ({
+                        ...set,
+                        setNumber: set.setNumber + 1
+                      }))
+                    ];
+                    
+                    return {
+                      ...prev,
+                      sets: updatedSets,
+                    };
+                  });
+                }}
+                color="primary"
+                sx={{ mr: 1 }}
+              >
+                <CopyIcon />
+              </IconButton>
+              <IconButton onClick={() => removeSet(index)} color="error">
+                <DeleteIcon />
+              </IconButton>
+            </Box>
           </Box>
         ))}
         <Button
