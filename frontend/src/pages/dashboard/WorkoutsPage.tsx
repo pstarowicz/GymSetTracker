@@ -131,7 +131,8 @@ export const WorkoutsPage = () => {
     setOpenDialog(true);
   };
 
-  const handleDeleteWorkout = async (id: number) => {
+  const handleDeleteWorkout = async (id: number | undefined) => {
+    if (!id) return;
     if (window.confirm('Are you sure you want to delete this workout?')) {
       try {
         await workoutService.deleteWorkout(id);
@@ -163,11 +164,9 @@ export const WorkoutsPage = () => {
         <Paper elevation={2}>
           <List>
             {workouts.map((workout, index) => (
-              <>
+              <div key={workout.id}>
                 {index > 0 && <Divider />}
-                <>
-                  <ListItem
-                    key={workout.id}
+                <ListItem
                     sx={{ 
                       cursor: 'pointer',
                       '&:hover': {
@@ -177,51 +176,56 @@ export const WorkoutsPage = () => {
                     onClick={() => setExpandedWorkoutId(expandedWorkoutId === workout.id ? null : workout.id)}
                   >
                     <ListItemText
+                      disableTypography
                       primary={
-                        <Box display="flex" alignItems="center">
-                          <Box>
-                            <Typography variant="h6" style={{ marginRight: '8px' }}>
-                              {new Date(
-                                workout.date[0], 
-                                workout.date[1] - 1, // JavaScript months are 0-based
-                                workout.date[2]
-                              ).toLocaleDateString(undefined, { 
-                                weekday: 'long',
-                                year: 'numeric', 
-                                month: 'long', 
-                                day: 'numeric' 
-                              })}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              ID: {workout.id}
-                            </Typography>
+                        <Typography component="div" variant="body1">
+                          <Box display="flex" alignItems="center">
+                            <Box>
+                              <Typography variant="h6" component="div" style={{ marginRight: '8px' }}>
+                                {new Date(
+                                  workout.date[0], 
+                                  workout.date[1] - 1,
+                                  workout.date[2]
+                                ).toLocaleDateString(undefined, { 
+                                  weekday: 'long',
+                                  year: 'numeric', 
+                                  month: 'long', 
+                                  day: 'numeric' 
+                                })}
+                              </Typography>
+                              <Typography variant="caption" component="div">
+                                ID: {workout.id}
+                              </Typography>
+                            </Box>
+                            {expandedWorkoutId === workout.id ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
                           </Box>
-                          {expandedWorkoutId === workout.id ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
-                        </Box>
+                        </Typography>
                       }
                       secondary={
-                        <Box>
-                          <Typography variant="body2" color="text.secondary">
-                            Time: {new Date(
-                              workout.date[0], 
-                              workout.date[1] - 1, // JavaScript months are 0-based
-                              workout.date[2],
-                              workout.date[3],
-                              workout.date[4]
-                            ).toLocaleTimeString(undefined, {
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            Duration: {workout.duration || 0} minutes | Sets: {workout.sets?.length || 0}
-                          </Typography>
-                          {workout.notes && (
-                            <Typography variant="body2" color="text.secondary">
-                              Notes: {workout.notes}
+                        <Typography component="div" variant="body2" color="text.secondary">
+                          <Box>
+                            <Typography component="div" variant="body2" color="text.secondary">
+                              Time: {new Date(
+                                workout.date[0], 
+                                workout.date[1] - 1,
+                                workout.date[2],
+                                workout.date[3],
+                                workout.date[4]
+                              ).toLocaleTimeString(undefined, {
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
                             </Typography>
-                          )}
-                        </Box>
+                            <Typography component="div" variant="body2" color="text.secondary">
+                              Duration: {workout.duration || 0} minutes | Sets: {workout.sets?.length || 0}
+                            </Typography>
+                            {workout.notes && (
+                              <Typography component="div" variant="body2" color="text.secondary">
+                                Notes: {workout.notes}
+                              </Typography>
+                            )}
+                          </Box>
+                        </Typography>
                       }
                     />
                     <ListItemSecondaryAction>
@@ -279,8 +283,7 @@ export const WorkoutsPage = () => {
                       </Table>
                     </Box>
                   </Collapse>
-                </>
-              </>
+              </div>
             ))}
           </List>
         </Paper>
