@@ -9,6 +9,7 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { RegisterPage } from '@/pages/auth/RegisterPage';
 import { WorkoutsPage } from '@/pages/dashboard/WorkoutsPage';
+import { WorkoutDetailsPage } from '@/pages/dashboard/WorkoutDetailsPage';
 import { ExercisesPage } from '@/pages/dashboard/ExercisesPage';
 import { PersonalRecordsPage } from '@/pages/dashboard/PersonalRecordsPage';
 import { ProfilePage } from '@/pages/dashboard/ProfilePage';
@@ -74,6 +75,16 @@ function App() {
                     <AuthGuard>
                       <DashboardLayout>
                         <WorkoutsPage />
+                      </DashboardLayout>
+                    </AuthGuard>
+                  }
+                />
+                <Route
+                  path="/workouts/:id"
+                  element={
+                    <AuthGuard>
+                      <DashboardLayout>
+                        <WorkoutDetailsPage />
                       </DashboardLayout>
                     </AuthGuard>
                   }

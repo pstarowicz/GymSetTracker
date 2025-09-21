@@ -37,7 +37,7 @@ public class WorkoutService {
     }
 
     public Workout getWorkoutById(Long id) {
-        return workoutRepository.findById(id)
+        return workoutRepository.findByIdWithSets(id)
                 .orElseThrow(() -> new RuntimeException("Workout not found"));
     }
 

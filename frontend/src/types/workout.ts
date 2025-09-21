@@ -7,7 +7,7 @@ export interface Workout {
     duration?: number;
     notes?: string;
     createdAt: string;
-    sets: WorkoutSet[];
+    sets?: WorkoutSet[];
 }
 
 export interface WorkoutSet {

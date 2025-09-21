@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Typography, 
   Paper, 
@@ -23,6 +24,7 @@ import { exerciseService } from '@/services/exercise.service';
 import { WorkoutForm } from '@/components/workouts/WorkoutForm';
 
 export const WorkoutsPage = () => {
+  const navigate = useNavigate();
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [openDialog, setOpenDialog] = useState(false);
@@ -102,17 +104,36 @@ export const WorkoutsPage = () => {
         <Grid container spacing={3}>
           {workouts.map((workout) => (
           <Grid item xs={12} sm={6} md={4} key={workout.id}>
-            <Card>
+            <Card 
+              sx={{ 
+                cursor: 'pointer',
+                '&:hover': {
+                  boxShadow: 6
+                }
+              }}
+              onClick={() => navigate(`/workouts/${workout.id}`)}
+            >
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  {new Date(workout.date).toLocaleString()}
+                  {new Date(workout.date).toLocaleDateString(undefined, { 
+                    weekday: 'long',
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  })}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Duration: {workout.duration} minutes
+                  Time: {new Date(workout.date).toLocaleTimeString(undefined, {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
                 </Typography>
-                {/* <Typography variant="body2" color="text.secondary">
-                  Sets: {workout.sets.length}
-                </Typography> */}
+                <Typography variant="body2" color="text.secondary">
+                  Duration: {workout.duration || 0} minutes
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Sets: {workout.sets?.length || 0}
+                </Typography>
                 {workout.notes && (
                   <Typography variant="body2" mt={1}>
                     Notes: {workout.notes}
@@ -120,10 +141,20 @@ export const WorkoutsPage = () => {
                 )}
               </CardContent>
               <CardActions>
-                <IconButton onClick={() => handleEditWorkout(workout)}>
+                <IconButton 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEditWorkout(workout);
+                  }}
+                >
                   <EditIcon />
                 </IconButton>
-                <IconButton onClick={() => handleDeleteWorkout(workout.id)}>
+                <IconButton 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteWorkout(workout.id);
+                  }}
+                >
                   <DeleteIcon />
                 </IconButton>
               </CardActions>
