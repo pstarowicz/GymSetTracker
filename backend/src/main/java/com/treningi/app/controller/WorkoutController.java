@@ -65,6 +65,15 @@ public class WorkoutController {
         return ResponseEntity.ok(workoutService.createWorkout(workoutRequest, user));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<Workout> updateWorkout(
+            @PathVariable Long id,
+            @RequestBody WorkoutRequest workoutRequest,
+            @AuthenticationPrincipal UserDetails currentUser) {
+        User user = customUserDetailsService.loadUserById(Long.parseLong(currentUser.getUsername()));
+        return ResponseEntity.ok(workoutService.updateWorkout(id, workoutRequest, user));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteWorkout(
             @PathVariable Long id,

@@ -80,4 +80,40 @@ public class WorkoutService {
         Workout workout = getWorkoutById(workoutId);
         return workoutSetRepository.findByWorkoutOrderBySetNumber(workout);
     }
+
+    @Transactional
+    public Workout updateWorkout(Long id, WorkoutRequest workoutRequest, User user) {
+        final Workout existingWorkout = getWorkoutById(id);
+        if (!existingWorkout.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Not authorized to update this workout");
+        }
+
+        // Update basic workout details
+        existingWorkout.setDate(workoutRequest.getDate());
+        existingWorkout.setDuration(workoutRequest.getDuration());
+        existingWorkout.setNotes(workoutRequest.getNotes());
+
+        // Clear existing sets without deleting them individually
+        existingWorkout.getSets().clear();
+        
+        // Save the workout to persist the basic details and clear sets
+        workoutRepository.save(existingWorkout);
+
+        // Add new sets
+        if (workoutRequest.getSets() != null) {
+            workoutRequest.getSets().forEach(setRequest -> {
+                WorkoutSet set = new WorkoutSet();
+                set.setWorkout(existingWorkout);
+                set.setExercise(exerciseService.getExerciseById(setRequest.getExerciseId()));
+                set.setSetNumber(setRequest.getSetNumber());
+                set.setWeight(setRequest.getWeight());
+                set.setReps(setRequest.getReps());
+                workoutSetRepository.save(set);
+            });
+        }
+
+        // Refresh and return the workout with new sets
+        return workoutRepository.findByIdWithSets(id)
+                .orElseThrow(() -> new RuntimeException("Workout not found after update"));
+    }
 }

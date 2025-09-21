@@ -31,17 +31,41 @@ export const WorkoutForm = ({ workout, exercises, onSubmit }: WorkoutFormProps) 
 
   useEffect(() => {
     if (workout) {
-      setFormData({
-        date: new Date(workout.date).toISOString().slice(0, 16),
-        duration: workout.duration || 0,
-        notes: workout.notes || '',
-        sets: workout.sets.map(set => ({
-          exerciseId: set.exerciseId,
-          reps: set.reps,
-          weight: set.weight,
-          setNumber: set.setNumber,
-        })),
-      });
+      try {
+        // Ensure we have a valid date
+        const date = new Date(workout.date);
+        if (isNaN(date.getTime())) {
+          // If date is invalid, use current date/time
+          console.warn('Invalid date in workout, using current date/time');
+          date = new Date();
+        }
+        
+        setFormData({
+          date: date.toISOString().slice(0, 16),
+          duration: workout.duration || 0,
+          notes: workout.notes || '',
+          sets: workout.sets?.map(set => ({
+            exerciseId: set.exercise?.id || 0,
+            reps: set.reps || 0,
+            weight: set.weight || 0,
+            setNumber: set.setNumber || 0,
+          })) || [],
+        });
+      } catch (error) {
+        console.error('Error parsing workout date:', error);
+        // Fallback to current date if there's any error
+        setFormData({
+          date: new Date().toISOString().slice(0, 16),
+          duration: workout.duration || 0,
+          notes: workout.notes || '',
+          sets: workout.sets?.map(set => ({
+            exerciseId: set.exercise?.id || 0,
+            reps: set.reps || 0,
+            weight: set.weight || 0,
+            setNumber: set.setNumber || 0,
+          })) || [],
+        });
+      }
     }
   }, [workout]);
 

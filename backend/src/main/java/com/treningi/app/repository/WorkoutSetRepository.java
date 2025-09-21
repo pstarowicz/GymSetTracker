@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface WorkoutSetRepository extends JpaRepository<WorkoutSet, Long> {
     List<WorkoutSet> findByWorkoutOrderBySetNumber(Workout workout);
+    void deleteByWorkout(Workout workout);
 }
