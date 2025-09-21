@@ -1,0 +1,22 @@
+-- Default exercises
+INSERT INTO exercises (name, muscle_group, is_custom, created_at) VALUES
+    ('Barbell Squat', 'Legs', false, CURRENT_TIMESTAMP),
+    ('Deadlift', 'Back', false, CURRENT_TIMESTAMP),
+    ('Bench Press', 'Chest', false, CURRENT_TIMESTAMP),
+    ('Overhead Press', 'Shoulders', false, CURRENT_TIMESTAMP),
+    ('Pull-up', 'Back', false, CURRENT_TIMESTAMP),
+    ('Push-ups', 'Chest', false, CURRENT_TIMESTAMP),
+    ('Dumbbell Row', 'Back', false, CURRENT_TIMESTAMP),
+    ('Leg Press', 'Legs', false, CURRENT_TIMESTAMP),
+    ('Dumbbell Bench Press', 'Chest', false, CURRENT_TIMESTAMP),
+    ('Romanian Deadlift', 'Legs', false, CURRENT_TIMESTAMP),
+    ('Lat Pulldown', 'Back', false, CURRENT_TIMESTAMP),
+    ('Dips', 'Chest', false, CURRENT_TIMESTAMP),
+    ('Leg Extensions', 'Legs', false, CURRENT_TIMESTAMP),
+    ('Leg Curls', 'Legs', false, CURRENT_TIMESTAMP),
+    ('Face Pulls', 'Shoulders', false, CURRENT_TIMESTAMP),
+    ('Lateral Raises', 'Shoulders', false, CURRENT_TIMESTAMP),
+    ('Tricep Pushdown', 'Arms', false, CURRENT_TIMESTAMP),
+    ('Bicep Curls', 'Arms', false, CURRENT_TIMESTAMP),
+    ('Plank', 'Core', false, CURRENT_TIMESTAMP),
+    ('Crunches', 'Core', false, CURRENT_TIMESTAMP);
