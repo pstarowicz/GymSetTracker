@@ -179,18 +179,23 @@ export const WorkoutsPage = () => {
                     <ListItemText
                       primary={
                         <Box display="flex" alignItems="center">
-                          <Typography variant="h6" style={{ marginRight: '8px' }}>
-                            {new Date(
-                              workout.date[0], 
-                              workout.date[1] - 1, // JavaScript months are 0-based
-                              workout.date[2]
-                            ).toLocaleDateString(undefined, { 
-                              weekday: 'long',
-                              year: 'numeric', 
-                              month: 'long', 
-                              day: 'numeric' 
-                            })}
-                          </Typography>
+                          <Box>
+                            <Typography variant="h6" style={{ marginRight: '8px' }}>
+                              {new Date(
+                                workout.date[0], 
+                                workout.date[1] - 1, // JavaScript months are 0-based
+                                workout.date[2]
+                              ).toLocaleDateString(undefined, { 
+                                weekday: 'long',
+                                year: 'numeric', 
+                                month: 'long', 
+                                day: 'numeric' 
+                              })}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              ID: {workout.id}
+                            </Typography>
+                          </Box>
                           {expandedWorkoutId === workout.id ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
                         </Box>
                       }
