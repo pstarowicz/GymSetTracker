@@ -31,34 +31,23 @@ const drawerWidth = 280;
 
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
   open?: boolean;
-}>(({ theme, open }) => ({
+}>(({ theme }) => ({
   flexGrow: 1,
-  padding: theme.spacing(4),
   backgroundColor: theme.palette.background.default,
   minHeight: '100vh',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  width: '100%',
-  maxWidth: '100%',
-  transition: theme.transitions.create(['margin', 'width'], {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.leavingScreen,
-  }),
-  ...(open && {
-    marginLeft: drawerWidth,
-    transition: theme.transitions.create(['margin', 'width'], {
-      easing: theme.transitions.easing.easeOut,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-  }),
-  ...(open && {
-    transition: theme.transitions.create('margin', {
-      easing: theme.transitions.easing.easeOut,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    marginLeft: drawerWidth,
-  }),
+  paddingTop: theme.spacing(3),
+  paddingBottom: theme.spacing(3),
+  '& > div': {
+    width: '100%',
+    maxWidth: '1200px',
+    marginLeft: 'auto',
+    marginRight: 'auto',
+    paddingLeft: theme.spacing(4),
+    paddingRight: theme.spacing(4),
+  }
 }));
 
 const menuItems = [
@@ -89,12 +78,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       <AppBar
         position="fixed"
         sx={{
-          width: { sm: `calc(100% - ${open ? drawerWidth : 0}px)` },
-          ml: { sm: open ? `${drawerWidth}px` : 0 },
-          transition: theme.transitions.create(['margin', 'width'], {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.leavingScreen,
-          }),
+          width: '100%',
           height: 70,
           display: 'flex',
           justifyContent: 'center',
@@ -146,6 +130,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         sx={{
           width: drawerWidth,
           flexShrink: 0,
+          position: 'fixed',
           '& .MuiDrawer-paper': {
             width: drawerWidth,
             boxSizing: 'border-box',

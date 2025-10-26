@@ -49,19 +49,16 @@ export const WorkoutsPage = () => {
 
   // Custom styles for the workout page
   const styles = {
-    container: {
-      maxWidth: '1200px',
-      margin: '0 auto',
-      width: '100%',
-      padding: '0 24px',
-    },
     workoutList: {
       margin: '24px 0',
+      '& .MuiListItem-root': {
+        padding: '16px 24px',
+      }
     },
     setsList: {
       '& .MuiTableCell-root': {
         fontSize: '1.05rem',
-        padding: '12px 16px',
+        padding: '16px 24px',
       },
     },
   };
@@ -163,18 +160,24 @@ export const WorkoutsPage = () => {
   };
 
   return (
-    <Box sx={styles.container}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4">Workouts</Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleCreateWorkout}
-          size="large"
+    <div>
+      <div style={{ marginBottom: '24px' }}>
+        <Box 
+          display="flex" 
+          justifyContent="space-between" 
+          alignItems="center"
         >
-          New Workout
-        </Button>
-      </Box>
+          <Typography variant="h4">Workouts</Typography>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleCreateWorkout}
+            size="large"
+          >
+            New Workout
+          </Button>
+        </Box>
+      </div>
 
       {loading ? (
         <Typography>Loading workouts...</Typography>
@@ -367,6 +370,6 @@ export const WorkoutsPage = () => {
           />
         </DialogContent>
       </Dialog>
-    </Box>
+    </div>
   );
 };
