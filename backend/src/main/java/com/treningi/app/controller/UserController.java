@@ -1,5 +1,6 @@
 package com.treningi.app.controller;
 
+import com.treningi.app.dto.ChangePasswordRequest;
 import com.treningi.app.dto.ProfileRequest;
 import com.treningi.app.dto.ProfileResponse;
 import com.treningi.app.entity.User;
@@ -8,6 +9,7 @@ import com.treningi.app.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -37,6 +39,14 @@ public class UserController {
         User user = userService.updateUserProfile(Long.parseLong(currentUser.getUsername()), profileRequest);
         ProfileResponse profile = new ProfileResponse(user.getName(), user.getEmail(), user.getWeight(), user.getHeight());
         return ResponseEntity.ok(profile);
+    }
+
+    @PostMapping("/me/change-password")
+    public ResponseEntity<Void> changePassword(
+            @AuthenticationPrincipal UserDetails currentUser,
+            @Valid @RequestBody ChangePasswordRequest request) {
+        userService.changePassword(Long.parseLong(currentUser.getUsername()), request);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/me")

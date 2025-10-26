@@ -1,5 +1,6 @@
 package com.treningi.app.service;
 
+import com.treningi.app.dto.ChangePasswordRequest;
 import com.treningi.app.dto.ProfileRequest;
 import com.treningi.app.dto.RegisterRequest;
 import com.treningi.app.entity.User;
@@ -82,5 +83,24 @@ public class UserService {
         }
 
         return userRepository.save(user);
+    }
+
+    @Transactional
+    public void changePassword(Long userId, ChangePasswordRequest request) {
+        User user = getUserById(userId);
+
+        // Verify current password
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new RuntimeException("Current password is incorrect");
+        }
+
+        // Verify that new password and confirmation match
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new RuntimeException("New password and confirmation do not match");
+        }
+
+        // Update password
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
     }
 }

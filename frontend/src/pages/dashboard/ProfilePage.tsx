@@ -1,7 +1,8 @@
-import { Typography, Paper, Box, Grid, TextField, Button } from '@mui/material';
+import { Typography, Paper, Box, Grid, TextField, Button, Divider } from '@mui/material';
 import { useAuth } from '@/context/AuthContext';
 import { useState, useEffect } from 'react';
 import { getProfile, updateProfile } from '@/services/profile.service';
+import { ChangePasswordForm } from '@/components/profile/ChangePasswordForm';
 
 interface ProfileData {
   name: string;
@@ -144,6 +145,13 @@ export const ProfilePage = () => {
             </Grid>
           </Grid>
         )}
+      </Paper>
+
+      <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>
+        Change Password
+      </Typography>
+      <Paper sx={{ p: 3 }}>
+        <ChangePasswordForm />
       </Paper>
     </Box>
   );

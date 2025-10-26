@@ -47,9 +47,9 @@
   - [ ] Display PRs for each exercise
   - [ ] Automatic PR tracking
   - [ ] PR history
-- [ ] Profile page:
-  - [ ] User information display
-  - [ ] Edit profile functionality
+- [x] Profile page:
+  - [x] User information display
+  - [x] Edit profile functionality
 
 ### Backend Enhancements
 - [ ] Remaining API endpoints:
