@@ -1,5 +1,7 @@
 package com.treningi.app.controller;
 
+import com.treningi.app.dto.ProfileRequest;
+import com.treningi.app.dto.ProfileResponse;
 import com.treningi.app.entity.User;
 import com.treningi.app.security.CustomUserDetailsService;
 import com.treningi.app.service.UserService;
@@ -19,6 +21,22 @@ public class UserController {
     public UserController(UserService userService, CustomUserDetailsService customUserDetailsService) {
         this.userService = userService;
         this.customUserDetailsService = customUserDetailsService;
+    }
+
+    @GetMapping("/me/profile")
+    public ResponseEntity<ProfileResponse> getProfile(@AuthenticationPrincipal UserDetails currentUser) {
+        User user = customUserDetailsService.loadUserById(Long.parseLong(currentUser.getUsername()));
+        ProfileResponse profile = new ProfileResponse(user.getName(), user.getEmail(), user.getWeight(), user.getHeight());
+        return ResponseEntity.ok(profile);
+    }
+
+    @PutMapping("/me/profile")
+    public ResponseEntity<ProfileResponse> updateProfile(
+            @AuthenticationPrincipal UserDetails currentUser,
+            @RequestBody ProfileRequest profileRequest) {
+        User user = userService.updateUserProfile(Long.parseLong(currentUser.getUsername()), profileRequest);
+        ProfileResponse profile = new ProfileResponse(user.getName(), user.getEmail(), user.getWeight(), user.getHeight());
+        return ResponseEntity.ok(profile);
     }
 
     @GetMapping("/me")

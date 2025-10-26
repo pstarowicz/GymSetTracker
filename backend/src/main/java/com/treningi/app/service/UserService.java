@@ -1,5 +1,6 @@
 package com.treningi.app.service;
 
+import com.treningi.app.dto.ProfileRequest;
 import com.treningi.app.dto.RegisterRequest;
 import com.treningi.app.entity.User;
 import com.treningi.app.repository.UserRepository;
@@ -41,6 +42,29 @@ public class UserService {
     public User getUserByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    @Transactional
+    public User updateUserProfile(Long id, ProfileRequest profileRequest) {
+        User user = getUserById(id);
+        
+        if (profileRequest.getName() != null) {
+            user.setName(profileRequest.getName());
+        }
+        if (profileRequest.getEmail() != null && !profileRequest.getEmail().equals(user.getEmail())) {
+            if (userRepository.existsByEmail(profileRequest.getEmail())) {
+                throw new RuntimeException("Email is already taken!");
+            }
+            user.setEmail(profileRequest.getEmail());
+        }
+        if (profileRequest.getWeight() != null) {
+            user.setWeight(profileRequest.getWeight());
+        }
+        if (profileRequest.getHeight() != null) {
+            user.setHeight(profileRequest.getHeight());
+        }
+        
+        return userRepository.save(user);
     }
 
     @Transactional

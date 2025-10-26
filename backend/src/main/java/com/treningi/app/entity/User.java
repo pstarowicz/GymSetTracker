@@ -22,9 +22,9 @@ public class User {
 
     private String name;
     
-    private Integer weight;
+    private Double weight;
     
-    private Integer height;
+    private Double height;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

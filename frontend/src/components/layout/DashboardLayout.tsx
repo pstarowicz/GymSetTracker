@@ -97,7 +97,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               {open ? <ChevronLeft /> : <MenuIcon />}
             </IconButton>
             <Typography 
-              variant="h6" 
+              variant="h6"
               noWrap 
               component="div" 
               sx={{ 
@@ -110,17 +110,21 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               GymSetTracker
             </Typography>
           </Box>
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: 1,
-            backgroundColor: 'rgba(37, 99, 235, 0.08)',
-            borderRadius: 2,
-            padding: '6px 12px',
-          }}>
+          <Box 
+            sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 1,
+              backgroundColor: 'rgba(37, 99, 235, 0.08)',
+              borderRadius: 2,
+              padding: '6px 12px',
+              cursor: 'pointer'
+            }}
+            onClick={() => navigate('/profile')}
+          >
             <AccountCircle sx={{ color: 'primary.main' }} />
             <Typography variant="body1" sx={{ fontWeight: 500 }}>
-              {user?.name}
+              {user?.name || 'Profile'}
             </Typography>
           </Box>
         </Toolbar>

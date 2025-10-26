@@ -7,6 +7,6 @@ public class RegisterRequest {
     private String email;
     private String password;
     private String name;
-    private Integer weight;
-    private Integer height;
+    private Double weight;
+    private Double height;
 }
