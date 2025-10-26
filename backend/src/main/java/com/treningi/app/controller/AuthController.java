@@ -54,6 +54,7 @@ public class AuthController {
             .type("Bearer")
             .userId(user.getId())
             .email(loginRequest.getEmail())
+            .name(user.getName())
             .build());
     }
 
@@ -76,6 +77,7 @@ public class AuthController {
             .type("Bearer")
             .userId(user.getId())
             .email(user.getEmail())
+            .name(user.getName())
             .build());
     }
 }

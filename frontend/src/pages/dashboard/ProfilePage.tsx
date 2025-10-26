@@ -11,21 +11,21 @@ interface ProfileData {
 }
 
 export const ProfilePage = () => {
-  const { user } = useAuth();
+  const { updateUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const data = await getProfile();
-        setProfileData(data);
-      } catch (error) {
-        console.error('Error fetching profile:', error);
-      }
-    };
+  const fetchProfile = async () => {
+    try {
+      const data = await getProfile();
+      setProfileData(data);
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    }
+  };
 
+  useEffect(() => {
     fetchProfile();
   }, []);
 
@@ -36,6 +36,12 @@ export const ProfilePage = () => {
     try {
       const updatedProfile = await updateProfile(profileData);
       setProfileData(updatedProfile);
+      updateUser({ 
+        name: updatedProfile.name,
+        email: updatedProfile.email,
+        weight: updatedProfile.weight,
+        height: updatedProfile.height
+      });
       setIsEditing(false);
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -117,7 +123,10 @@ export const ProfilePage = () => {
                   </Button>
                   <Button
                     variant="outlined"
-                    onClick={() => setIsEditing(false)}
+                    onClick={async () => {
+                      await fetchProfile();
+                      setIsEditing(false);
+                    }}
                     disabled={isLoading}
                   >
                     Cancel

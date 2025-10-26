@@ -7,6 +7,7 @@ interface AuthContextType {
     token: string | null;
     login: (response: AuthResponse) => void;
     logout: () => void;
+    updateUser: (userData: Partial<User>) => void;
     isAuthenticated: boolean;
     isLoading: boolean;
 }
@@ -32,13 +33,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     const login = (response: AuthResponse) => {
-        const { token, userId, email } = response;
+        const { token, userId, email, name } = response;
         
         // Create basic user object from auth response
         const newUser: User = {
             id: userId,
             email,
-            name: '',
+            name: name || '',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
         };
@@ -62,11 +63,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         authService.setAuthToken('');
     };
 
+    const updateUser = (userData: Partial<User>) => {
+        if (!user) return;
+
+        const updatedUser = {
+            ...user,
+            ...userData
+        };
+
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+    };
+
     const value = {
         user,
         token,
         login,
         logout,
+        updateUser,
         isAuthenticated: !!token,
         isLoading
     };
