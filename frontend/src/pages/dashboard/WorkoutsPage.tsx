@@ -127,9 +127,9 @@ export const WorkoutsPage = () => {
     // Create a new workout object based on the selected one
     // but without the id and with current date
     const now = new Date();
-    const workoutCopy = {
+    const workoutCopy: Workout = {
       ...workout,
-      id: undefined,
+      id: 0, // Temporary ID that will be replaced when saved
       date: [
         now.getFullYear(),
         now.getMonth() + 1,
@@ -139,11 +139,17 @@ export const WorkoutsPage = () => {
       ],
       sets: workout.sets?.map(set => ({
         ...set,
-        id: undefined,
-        workoutId: undefined
+        id: 0, // Temporary ID that will be replaced when saved
+        workoutId: 0, // Temporary ID that will be replaced when saved
+        exerciseId: set.exerciseId,
+        exercise: set.exercise,
+        setNumber: set.setNumber,
+        weight: set.weight,
+        reps: set.reps,
+        createdAt: new Date().toISOString()
       }))
     };
-    setSelectedWorkout({ ...workoutCopy, isNew: true }); // Add isNew flag
+    setSelectedWorkout({ ...workoutCopy, isNew: true } as Workout);
     setOpenDialog(true);
   };
 
@@ -196,7 +202,7 @@ export const WorkoutsPage = () => {
                         backgroundColor: 'rgba(0, 0, 0, 0.04)'
                       }
                     }}
-                    onClick={() => setExpandedWorkoutId(expandedWorkoutId === workout.id ? null : workout.id)}
+                    onClick={() => workout.id && setExpandedWorkoutId(expandedWorkoutId === workout.id ? null : workout.id)}
                   >
                     <ListItemText
                       disableTypography
