@@ -1,51 +1,68 @@
 package com.treningi.app.service;
 
-import com.treningi.app.entity.PersonalRecord;
+import com.treningi.app.dto.PersonalRecordResponse;
 import com.treningi.app.entity.Exercise;
 import com.treningi.app.entity.User;
 import com.treningi.app.entity.WorkoutSet;
-import com.treningi.app.repository.PersonalRecordRepository;
+import com.treningi.app.repository.WorkoutSetRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class PersonalRecordService {
-    private final PersonalRecordRepository personalRecordRepository;
+    private final WorkoutSetRepository workoutSetRepository;
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    public PersonalRecordService(PersonalRecordRepository personalRecordRepository) {
-        this.personalRecordRepository = personalRecordRepository;
+    public PersonalRecordService(WorkoutSetRepository workoutSetRepository) {
+        this.workoutSetRepository = workoutSetRepository;
     }
 
-    public List<PersonalRecord> getUserPersonalRecords(User user) {
-        return personalRecordRepository.findByUserOrderByDateAchievedDesc(user);
+    public List<PersonalRecordResponse> getUserPersonalRecords(User user) {
+        Map<Exercise, List<WorkoutSet>> exerciseSets = workoutSetRepository.findByWorkoutUser(user)
+                .stream()
+                .collect(Collectors.groupingBy(WorkoutSet::getExercise));
+
+        return exerciseSets.entrySet().stream()
+                .map(entry -> calculateRecords(entry.getKey(), entry.getValue()))
+                .filter(record -> record.getMaxWeight() != null || record.getMaxVolume() != null)
+                .collect(Collectors.toList());
     }
 
-    public List<PersonalRecord> getExercisePersonalRecords(User user, Exercise exercise) {
-        return personalRecordRepository.findByUserAndExerciseOrderByWeightDescRepsDesc(user, exercise);
-    }
+    private PersonalRecordResponse calculateRecords(Exercise exercise, List<WorkoutSet> sets) {
+        PersonalRecordResponse response = new PersonalRecordResponse();
+        response.setExerciseId(exercise.getId());
+        response.setExerciseName(exercise.getName());
 
-    @Transactional
-    public PersonalRecord checkAndCreatePersonalRecord(WorkoutSet set, User user) {
-        List<PersonalRecord> existingRecords = getExercisePersonalRecords(user, set.getExercise());
-        
-        boolean isNewRecord = existingRecords.stream()
-                .noneMatch(record -> 
-                    (record.getWeight() >= set.getWeight() && record.getReps() >= set.getReps()));
+        // Calculate max weight PR
+        Optional<WorkoutSet> maxWeightSet = sets.stream()
+                .max(Comparator.comparing(WorkoutSet::getWeight));
 
-        if (isNewRecord) {
-            PersonalRecord newRecord = new PersonalRecord();
-            newRecord.setUser(user);
-            newRecord.setExercise(set.getExercise());
-            newRecord.setWeight(set.getWeight());
-            newRecord.setReps(set.getReps());
-            newRecord.setDateAchieved(LocalDateTime.now());
-            
-            return personalRecordRepository.save(newRecord);
+        if (maxWeightSet.isPresent()) {
+            WorkoutSet set = maxWeightSet.get();
+            response.setMaxWeight(set.getWeight());
+            response.setMaxWeightReps(set.getReps());
+            response.setMaxWeightDate(set.getWorkout().getDate().format(DATE_FORMATTER));
         }
-        
-        return null;
+
+        // Calculate max volume PR (weight * reps summed per workout)
+        Map<LocalDateTime, Double> workoutVolumes = sets.stream()
+                .collect(Collectors.groupingBy(
+                    set -> set.getWorkout().getDate(),
+                    Collectors.summingDouble(set -> set.getWeight() * set.getReps())
+                ));
+
+        workoutVolumes.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .ifPresent(entry -> {
+                    response.setMaxVolume(entry.getValue());
+                    response.setMaxVolumeDate(entry.getKey().format(DATE_FORMATTER));
+                });
+
+        return response;
     }
 }

@@ -1,14 +1,91 @@
-import { Typography, Paper, Box } from '@mui/material';
+import { Typography, Paper, Box, Grid, Card, CardContent, Divider } from '@mui/material';
+import { useQuery } from 'react-query';
+import { personalRecordService } from '@/services/personal-record.service';
 
 export const PersonalRecordsPage = () => {
+  const { data: records, isLoading } = useQuery({
+    queryKey: ['personalRecords'],
+    queryFn: () => personalRecordService.getPersonalRecords(),
+  });
+
+  if (isLoading) {
+    return <Typography>Loading records...</Typography>;
+  }
+
+  if (!records?.length) {
+    return (
+      <Box>
+        <Typography variant="h4" gutterBottom>
+          Personal Records
+        </Typography>
+        <Paper sx={{ p: 2 }}>
+          <Typography>No records yet. Start working out to see your personal records!</Typography>
+        </Paper>
+      </Box>
+    );
+  }
+
   return (
     <Box>
       <Typography variant="h4" gutterBottom>
         Personal Records
       </Typography>
-      <Paper sx={{ p: 2 }}>
-        <Typography>Your personal records will appear here.</Typography>
-      </Paper>
+      <Grid container spacing={2}>
+        {records.map((record) => (
+          <Grid item xs={12} sm={6} md={4} key={record.exerciseId}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  {record.exerciseName}
+                </Typography>
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Max Weight
+                  </Typography>
+                  {record.maxWeight && record.maxWeightReps ? (
+                    <>
+                      <Typography variant="body1">
+                        {record.maxWeight}kg × {record.maxWeightReps} reps
+                      </Typography>
+                      {record.maxWeightDate && (
+                        <Typography variant="caption" color="text.secondary">
+                          Achieved on {record.maxWeightDate}
+                        </Typography>
+                      )}
+                    </>
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      No weight record yet
+                    </Typography>
+                  )}
+                </Box>
+                <Divider sx={{ my: 1 }} />
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Max Volume (in one workout)
+                  </Typography>
+                  {record.maxVolume ? (
+                    <>
+                      <Typography variant="body1">
+                        {record.maxVolume.toFixed(1)}kg
+                      </Typography>
+                      {record.maxVolumeDate && (
+                        <Typography variant="caption" color="text.secondary">
+                          Achieved on {record.maxVolumeDate}
+                        </Typography>
+                      )}
+                    </>
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      No volume record yet
+                    </Typography>
+                  )}
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
     </Box>
   );
 };

@@ -45,8 +45,6 @@
   - [x] Edit/Delete workouts
 - [ ] Personal Records page:
   - [ ] Display PRs for each exercise
-  - [ ] Automatic PR tracking
-  - [ ] PR history
 - [x] Profile page:
   - [x] User information display
   - [x] Edit profile functionality
