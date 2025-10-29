@@ -40,6 +40,8 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
   alignItems: 'center',
   paddingTop: theme.spacing(3),
   paddingBottom: theme.spacing(3),
+  position: 'relative',
+  zIndex: 1,
   '& > div': {
     width: '100%',
     maxWidth: '1200px',
@@ -135,6 +137,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           width: drawerWidth,
           flexShrink: 0,
           position: 'fixed',
+          zIndex: theme.zIndex.drawer,
           '& .MuiDrawer-paper': {
             width: drawerWidth,
             boxSizing: 'border-box',
@@ -142,6 +145,10 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             paddingTop: 0,
             border: 'none',
             backgroundColor: theme.palette.background.default,
+            zIndex: theme.zIndex.drawer,
+            ...(isMobile && {
+              position: 'fixed',
+            }),
           },
         }}
         variant={isMobile ? 'temporary' : 'persistent'}
