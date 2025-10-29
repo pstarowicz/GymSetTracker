@@ -45,7 +45,7 @@ export const PersonalRecordsPage = () => {
                   {record.maxWeight && record.maxWeightReps ? (
                     <>
                       <Typography variant="body1">
-                        {record.maxWeight}kg × {record.maxWeightReps} reps
+                        {record.maxWeight}kg (×{record.maxWeightReps} reps)
                       </Typography>
                       {record.maxWeightDate && (
                         <Typography variant="caption" color="text.secondary">
