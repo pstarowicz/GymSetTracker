@@ -69,6 +69,16 @@ export const PersonalRecordsPage = () => {
                       <Typography variant="body1">
                         {record.maxVolume.toFixed(1)}kg
                       </Typography>
+                      {record.maxVolumeSets && (
+                        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                          {record.maxVolumeSets?.map((set, index) => (
+                            <Box key={index} component="span" sx={{ display: 'inline' }}>
+                              {`${set.weight}×${set.reps}`}
+                              {index < (record.maxVolumeSets?.length ?? 0) - 1 ? ' ' : ''}
+                            </Box>
+                          ))}
+                        </Typography>
+                      )}
                       {record.maxVolumeDate && (
                         <Typography variant="caption" color="text.secondary">
                           Achieved on {record.maxVolumeDate}

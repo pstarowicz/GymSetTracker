@@ -1,5 +1,11 @@
 import { axiosInstance } from '@/utils/axios';
 
+interface VolumeSetInfo {
+  weight: number;
+  reps: number;
+  volumeContribution: number;
+}
+
 export interface PersonalRecord {
   exerciseId: number;
   exerciseName: string;
@@ -8,6 +14,7 @@ export interface PersonalRecord {
   maxWeightDate: string | null;
   maxVolume: number | null;
   maxVolumeDate: string | null;
+  maxVolumeSets: VolumeSetInfo[] | null;
 }
 
 class PersonalRecordService {

@@ -1,6 +1,7 @@
 package com.treningi.app.service;
 
 import com.treningi.app.dto.PersonalRecordResponse;
+import com.treningi.app.dto.VolumeSetInfo;
 import com.treningi.app.entity.Exercise;
 import com.treningi.app.entity.User;
 import com.treningi.app.entity.WorkoutSet;
@@ -40,7 +41,10 @@ public class PersonalRecordService {
 
         // Calculate max weight PR
         Optional<WorkoutSet> maxWeightSet = sets.stream()
-                .max(Comparator.comparing(WorkoutSet::getWeight));
+                .max(Comparator
+                    .comparing(WorkoutSet::getWeight)
+                    .thenComparing(WorkoutSet::getReps)
+                    .thenComparing(set -> set.getWorkout().getDate(), Comparator.reverseOrder()));
 
         if (maxWeightSet.isPresent()) {
             WorkoutSet set = maxWeightSet.get();
@@ -50,10 +54,15 @@ public class PersonalRecordService {
         }
 
         // Calculate max volume PR (weight * reps summed per workout)
-        Map<LocalDateTime, Double> workoutVolumes = sets.stream()
-                .collect(Collectors.groupingBy(
-                    set -> set.getWorkout().getDate(),
-                    Collectors.summingDouble(set -> set.getWeight() * set.getReps())
+        Map<LocalDateTime, List<WorkoutSet>> workoutSets = sets.stream()
+                .collect(Collectors.groupingBy(set -> set.getWorkout().getDate()));
+
+        Map<LocalDateTime, Double> workoutVolumes = workoutSets.entrySet().stream()
+                .collect(Collectors.toMap(
+                    Map.Entry::getKey,
+                    e -> e.getValue().stream()
+                        .mapToDouble(set -> set.getWeight() * set.getReps())
+                        .sum()
                 ));
 
         workoutVolumes.entrySet().stream()
@@ -61,8 +70,12 @@ public class PersonalRecordService {
                 .ifPresent(entry -> {
                     response.setMaxVolume(entry.getValue());
                     response.setMaxVolumeDate(entry.getKey().format(DATE_FORMATTER));
-                });
-
-        return response;
+                    
+                    // Add the sets that contributed to max volume
+                    List<VolumeSetInfo> volumeSets = workoutSets.get(entry.getKey()).stream()
+                            .map(set -> new VolumeSetInfo(set.getWeight(), set.getReps()))
+                            .collect(Collectors.toList());
+                    response.setMaxVolumeSets(volumeSets);
+                });        return response;
     }
 }

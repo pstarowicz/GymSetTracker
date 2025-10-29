@@ -1,6 +1,7 @@
 package com.treningi.app.dto;
 
 import lombok.Data;
+import java.util.List;
 
 @Data
 public class PersonalRecordResponse {
@@ -11,4 +12,5 @@ public class PersonalRecordResponse {
     private Integer maxWeightReps;
     private String maxWeightDate;
     private String maxVolumeDate;
+    private List<VolumeSetInfo> maxVolumeSets;
 }
