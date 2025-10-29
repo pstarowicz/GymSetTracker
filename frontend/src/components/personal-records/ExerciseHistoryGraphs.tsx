@@ -43,6 +43,21 @@ export const ExerciseHistoryGraphs = ({ exerciseId, exerciseName }: ExerciseHist
     volume: Number(record.volume.toFixed(1))
   }));
 
+  const calculateYDomain = (values: number[]) => {
+    if (values.length === 0) return [0, 10];
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    if (min === max) {
+      // If there's only one value or all values are the same
+      return [min - min * 0.1, max + max * 0.1];
+    }
+    const range = max - min;
+    return [min - range * 0.1, max + range * 0.1];
+  };
+
+  const maxWeightDomain = calculateYDomain(formattedData.map(d => d.maxWeight));
+  const volumeDomain = calculateYDomain(formattedData.map(d => d.volume));
+
   return (
     <Box>
       <Typography variant="h5" gutterBottom sx={{ mb: 2 }}>
@@ -74,6 +89,10 @@ export const ExerciseHistoryGraphs = ({ exerciseId, exerciseName }: ExerciseHist
                 offset: 0
               }}
               width={60}
+              domain={maxWeightDomain}
+              scale="linear"
+              allowDataOverflow={false}
+              tickCount={8}
             />
               <Tooltip 
                 contentStyle={{ 
@@ -125,6 +144,10 @@ export const ExerciseHistoryGraphs = ({ exerciseId, exerciseName }: ExerciseHist
                 offset: 0
               }}
               width={60}
+              domain={volumeDomain}
+              scale="linear"
+              allowDataOverflow={false}
+              tickCount={8}
             />
               <Tooltip 
                 contentStyle={{ 
