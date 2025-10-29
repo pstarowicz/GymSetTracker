@@ -13,4 +13,7 @@ public interface WorkoutSetRepository extends JpaRepository<WorkoutSet, Long> {
     
     @Query("SELECT ws FROM WorkoutSet ws WHERE ws.workout.user = ?1")
     List<WorkoutSet> findByWorkoutUser(User user);
+    
+    @Query("SELECT ws FROM WorkoutSet ws WHERE ws.workout.user = ?1 AND ws.exercise.id = ?2")
+    List<WorkoutSet> findByWorkoutUserAndExerciseId(User user, Long exerciseId);
 }

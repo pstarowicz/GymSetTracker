@@ -17,9 +17,23 @@ export interface PersonalRecord {
   maxVolumeSets: VolumeSetInfo[] | null;
 }
 
+export interface ExerciseHistory {
+  exerciseId: number;
+  date: string; // ISO date-time string
+  maxWeight: number;
+  maxWeightReps: number;
+  volume: number;
+  volumeSets: string[];
+}
+
 class PersonalRecordService {
   async getPersonalRecords(): Promise<PersonalRecord[]> {
     const response = await axiosInstance.get<PersonalRecord[]>('/api/records');
+    return response.data;
+  }
+
+  async getExerciseHistory(exerciseId: number): Promise<ExerciseHistory[]> {
+    const response = await axiosInstance.get<ExerciseHistory[]>(`/api/records/exercise/${exerciseId}/history`);
     return response.data;
   }
 }

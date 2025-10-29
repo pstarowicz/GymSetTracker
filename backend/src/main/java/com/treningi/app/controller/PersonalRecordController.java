@@ -1,5 +1,6 @@
 package com.treningi.app.controller;
 
+import com.treningi.app.dto.ExerciseHistoryResponse;
 import com.treningi.app.dto.PersonalRecordResponse;
 import com.treningi.app.entity.User;
 import com.treningi.app.security.CustomUserDetailsService;
@@ -32,5 +33,11 @@ public class PersonalRecordController {
         return ResponseEntity.ok(personalRecordService.getUserPersonalRecords(user));
     }
 
-    // Removed /exercise/{exerciseId} endpoint as it's no longer needed with the new implementation
+    @GetMapping("/exercise/{exerciseId}/history")
+    public ResponseEntity<List<ExerciseHistoryResponse>> getExerciseHistory(
+            @PathVariable Long exerciseId,
+            @AuthenticationPrincipal UserDetails currentUser) {
+        User user = customUserDetailsService.loadUserById(Long.parseLong(currentUser.getUsername()));
+        return ResponseEntity.ok(personalRecordService.getExerciseHistory(exerciseId, user));
+    }
 }

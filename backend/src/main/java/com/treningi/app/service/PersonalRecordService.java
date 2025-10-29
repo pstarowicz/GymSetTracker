@@ -1,5 +1,6 @@
 package com.treningi.app.service;
 
+import com.treningi.app.dto.ExerciseHistoryResponse;
 import com.treningi.app.dto.PersonalRecordResponse;
 import com.treningi.app.dto.VolumeSetInfo;
 import com.treningi.app.entity.Exercise;
@@ -21,6 +22,56 @@ public class PersonalRecordService {
 
     public PersonalRecordService(WorkoutSetRepository workoutSetRepository) {
         this.workoutSetRepository = workoutSetRepository;
+    }
+
+    public List<ExerciseHistoryResponse> getExerciseHistory(Long exerciseId, User user) {
+        List<WorkoutSet> sets = workoutSetRepository.findByWorkoutUserAndExerciseId(user, exerciseId);
+        
+        // Group sets by workout date
+        Map<LocalDateTime, List<WorkoutSet>> setsByWorkout = sets.stream()
+                .collect(Collectors.groupingBy(set -> set.getWorkout().getDate()));
+
+        // Calculate max weight and volume for each workout
+        return setsByWorkout.entrySet().stream()
+                .map(entry -> {
+                    ExerciseHistoryResponse response = new ExerciseHistoryResponse();
+                    response.setExerciseId(exerciseId);
+                    response.setDate(entry.getKey().format(DateTimeFormatter.ISO_DATE_TIME));
+                    
+                    // Find max weight and corresponding reps for this workout
+                    WorkoutSet maxWeightSet = entry.getValue().stream()
+                            .max(Comparator.comparing(WorkoutSet::getWeight))
+                            .orElse(null);
+                    
+                    if (maxWeightSet != null) {
+                        response.setMaxWeight(maxWeightSet.getWeight());
+                        response.setMaxWeightReps(maxWeightSet.getReps());
+                    } else {
+                        response.setMaxWeight(0.0);
+                        response.setMaxWeightReps(0);
+                    }
+                    
+                    // Calculate total volume and create set descriptions for this workout
+                    double totalVolume = 0.0;
+                    List<String> volumeSets = new ArrayList<>();
+                    
+                    for (WorkoutSet set : entry.getValue()) {
+                        double setVolume = set.getWeight() * set.getReps();
+                        totalVolume += setVolume;
+                        // Format weight without decimal places if it's a whole number
+                        String weightStr = set.getWeight() % 1 == 0 
+                            ? String.format("%.0f", set.getWeight())
+                            : String.format("%.1f", set.getWeight());
+                        volumeSets.add(weightStr + "×" + set.getReps());
+                    }
+                    
+                    response.setVolume(totalVolume);
+                    response.setVolumeSets(volumeSets);
+                            
+                    return response;
+                })
+                .sorted(Comparator.comparing(ExerciseHistoryResponse::getDate))
+                .collect(Collectors.toList());
     }
 
     public List<PersonalRecordResponse> getUserPersonalRecords(User user) {
