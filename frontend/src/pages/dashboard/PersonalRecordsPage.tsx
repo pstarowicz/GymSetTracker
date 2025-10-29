@@ -62,7 +62,7 @@ export const PersonalRecordsPage = () => {
                 <Divider sx={{ my: 1 }} />
                 <Box>
                   <Typography variant="subtitle2" color="text.secondary">
-                    Max Volume (in one workout)
+                    Max Volume
                   </Typography>
                   {record.maxVolume ? (
                     <>
