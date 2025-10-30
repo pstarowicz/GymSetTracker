@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Typography,
   Paper,
@@ -17,6 +17,9 @@ import {
   TextField,
   IconButton,
   MenuItem,
+  FormControl,
+  InputLabel,
+  Select,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -34,10 +37,31 @@ const muscleGroups = [
   'Other'
 ];
 
+interface Filters {
+  search: string;
+  muscleGroup: string;
+  type: string;
+}
+
 export const ExercisesPage = () => {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [open, setOpen] = useState(false);
   const [editingExercise, setEditingExercise] = useState<Exercise | null>(null);
+  const [filters, setFilters] = useState<Filters>({
+    search: '',
+    muscleGroup: '',
+    type: ''
+  });
+
+  const filteredExercises = useMemo(() => {
+    return exercises.filter(exercise => {
+      const matchesSearch = exercise.name.toLowerCase().includes(filters.search.toLowerCase());
+      const matchesMuscleGroup = !filters.muscleGroup || exercise.muscleGroup === filters.muscleGroup;
+      const matchesType = !filters.type || 
+        (filters.type === 'custom' ? exercise.isCustom : !exercise.isCustom);
+      return matchesSearch && matchesMuscleGroup && matchesType;
+    });
+  }, [exercises, filters]);
   
   const styles = {
     container: {
@@ -127,17 +151,68 @@ export const ExercisesPage = () => {
 
   return (
     <Box sx={styles.container}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4">Exercises</Typography>
-        <Button 
-          variant="contained" 
-          color="primary" 
-          onClick={() => handleOpen()}
-          size="large"
-          startIcon={<EditIcon />}
-        >
-          Add Exercise
-        </Button>
+      <Box mb={3}>
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+          <Typography variant="h4">Exercises</Typography>
+          <Button 
+            variant="contained" 
+            color="primary" 
+            onClick={() => handleOpen()}
+            size="large"
+            startIcon={<EditIcon />}
+          >
+            Add Exercise
+          </Button>
+        </Box>
+
+        <Paper sx={{ p: 2 }}>
+          <Box display="flex" gap={2}>
+            <TextField
+              label="Search exercises"
+              variant="outlined"
+              size="small"
+              fullWidth
+              value={filters.search}
+              onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+              placeholder="Search by name..."
+            />
+            <FormControl sx={{ minWidth: 200 }}>
+              <InputLabel id="muscle-group-label" size="small">Muscle Group</InputLabel>
+              <Select
+                labelId="muscle-group-label"
+                value={filters.muscleGroup}
+                size="small"
+                label="Muscle Group"
+                onChange={(e) => setFilters(prev => ({ ...prev, muscleGroup: e.target.value }))}
+              >
+                <MenuItem value="">All</MenuItem>
+                {muscleGroups.map((group) => (
+                  <MenuItem key={group} value={group}>{group}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl sx={{ minWidth: 150 }}>
+              <InputLabel id="type-label" size="small">Type</InputLabel>
+              <Select
+                labelId="type-label"
+                value={filters.type}
+                size="small"
+                label="Type"
+                onChange={(e) => setFilters(prev => ({ ...prev, type: e.target.value }))}
+              >
+                <MenuItem value="">All</MenuItem>
+                <MenuItem value="default">Default</MenuItem>
+                <MenuItem value="custom">Custom</MenuItem>
+              </Select>
+            </FormControl>
+            <Button
+              variant="outlined"
+              onClick={() => setFilters({ search: '', muscleGroup: '', type: '' })}
+            >
+              Clear Filters
+            </Button>
+          </Box>
+        </Paper>
       </Box>
 
       {error && (
@@ -157,7 +232,7 @@ export const ExercisesPage = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {exercises.map((exercise) => (
+            {filteredExercises.map((exercise) => (
               <TableRow key={exercise.id}>
                 <TableCell sx={{ fontSize: '1.05rem' }}>{exercise.name}</TableCell>
                 <TableCell sx={{ fontSize: '1.05rem' }}>{exercise.muscleGroup}</TableCell>

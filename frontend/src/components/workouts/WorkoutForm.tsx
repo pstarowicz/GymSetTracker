@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   Grid,
@@ -7,10 +7,9 @@ import {
   IconButton,
   Typography,
   FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
+  Autocomplete,
 } from '@mui/material';
+import { DateTimePicker } from '@mui/x-date-pickers';
 import { Add as AddIcon, Delete as DeleteIcon, ContentCopy as CopyIcon } from '@mui/icons-material';
 import { WorkoutRequest, WorkoutSetRequest, Workout } from '@/types/workout';
 import { Exercise } from '@/types/exercise';
@@ -22,8 +21,9 @@ interface WorkoutFormProps {
 }
 
 export const WorkoutForm = ({ workout, exercises, onSubmit }: WorkoutFormProps) => {
-  const [formData, setFormData] = useState<WorkoutRequest>({
-    date: new Date().toISOString().slice(0, 16), // Get date and time (YYYY-MM-DDThh:mm)
+  const [formData, setFormData] = useState<WorkoutRequest & { workoutDate: Date }>({
+    date: new Date().toISOString().slice(0, 16),
+    workoutDate: new Date(),
     duration: 0,
     notes: '',
     sets: [],
@@ -123,18 +123,29 @@ export const WorkoutForm = ({ workout, exercises, onSubmit }: WorkoutFormProps) 
     onSubmit(formData);
   };
 
+  const [exerciseSearch, setExerciseSearch] = useState('');
+
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
       <Grid container spacing={3}>
         <Grid item xs={12} sm={6}>
-          <TextField
-            fullWidth
-            type="datetime-local"
-            name="date"
+          <DateTimePicker
             label="Date and Time"
-            value={formData.date}
-            onChange={handleChange}
-            InputLabelProps={{ shrink: true }}
+            value={formData.workoutDate}
+            onChange={(newValue) => {
+              if (newValue) {
+                setFormData(prev => ({
+                  ...prev,
+                  workoutDate: newValue,
+                  date: newValue.toISOString().slice(0, 16)
+                }));
+              }
+            }}
+            slotProps={{
+              textField: {
+                fullWidth: true
+              }
+            }}
           />
         </Grid>
         <Grid item xs={12} sm={6}>
@@ -167,18 +178,23 @@ export const WorkoutForm = ({ workout, exercises, onSubmit }: WorkoutFormProps) 
         {formData.sets.map((set, index) => (
           <Box key={index} sx={{ display: 'flex', gap: 2, mb: 2, alignItems: 'center' }}>
             <FormControl sx={{ flexGrow: 1 }}>
-              <InputLabel>Exercise</InputLabel>
-              <Select
-                value={set.exerciseId}
-                label="Exercise"
-                onChange={(e) => handleSetChange(index, 'exerciseId', Number(e.target.value))}
-              >
-                {exercises.map((exercise) => (
-                  <MenuItem key={exercise.id} value={exercise.id}>
-                    {exercise.name}
-                  </MenuItem>
-                ))}
-              </Select>
+              <Autocomplete
+                value={exercises.find(e => e.id === set.exerciseId) || null}
+                options={exercises}
+                getOptionLabel={(option) => option.name}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Exercise"
+                    placeholder="Search exercise..."
+                  />
+                )}
+                onChange={(_, newValue) => {
+                  handleSetChange(index, 'exerciseId', newValue?.id || 0);
+                }}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                fullWidth
+              />
             </FormControl>
             <TextField
               type="number"

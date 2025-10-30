@@ -20,8 +20,10 @@ import {
   TableBody,
   TableCell,
   TableHead,
-  TableRow
+  TableRow,
+  TextField
 } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers';
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, KeyboardArrowDown, KeyboardArrowUp, ContentCopy as CopyIcon } from '@mui/icons-material';
 import { workoutService } from '@/services/workout.service';
 import { Workout, WorkoutRequest } from '@/types/workout';
@@ -46,6 +48,11 @@ export const WorkoutsPage = () => {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
   const [expandedWorkoutId, setExpandedWorkoutId] = useState<number | null>(null);
+  const [searchText, setSearchText] = useState('');
+  const [dateRange, setDateRange] = useState<{ start: Date | null; end: Date | null }>({
+    start: null,
+    end: null
+  });
 
   // Custom styles for the workout page
   const styles = {
@@ -86,17 +93,45 @@ export const WorkoutsPage = () => {
   useEffect(() => {
     loadWorkouts();
     loadExercises();
-  }, [page]);
+  }, [page, dateRange.start, dateRange.end]);
+
+  // Debounced text search
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      loadWorkouts();
+    }, 300);
+
+    return () => clearTimeout(handler);
+  }, [searchText]);
 
   const loadWorkouts = async () => {
     try {
       setLoading(true);
-      console.log('Loading workouts for page:', page);
-      const response = await workoutService.getWorkouts(page);
-      console.log('Received workouts:', response.data);
-      const workouts = response.data.content;
-      console.log('Sample workout date:', workouts[0]?.date);
-      setWorkouts(workouts);
+      let response;
+      
+      if (dateRange.start && dateRange.end) {
+        response = await workoutService.getWorkoutsBetweenDates(
+          dateRange.start,
+          dateRange.end
+        );
+        setWorkouts(response.data);
+      } else {
+        response = await workoutService.getWorkouts(page);
+        setWorkouts(response.data.content);
+      }
+
+      // Apply text filter locally
+      if (searchText.trim()) {
+        const searchLower = searchText.toLowerCase();
+        setWorkouts(prevWorkouts => 
+          prevWorkouts.filter(workout => 
+            workout.notes?.toLowerCase().includes(searchLower) ||
+            workout.sets?.some(set => 
+              set.exercise?.name.toLowerCase().includes(searchLower)
+            )
+          )
+        );
+      }
     } catch (error) {
       console.error('Failed to load workouts:', error);
     } finally {
@@ -167,11 +202,12 @@ export const WorkoutsPage = () => {
 
   return (
     <div>
-      <div style={{ marginBottom: '24px' }}>
+      <Box sx={{ mb: 3 }}>
         <Box 
           display="flex" 
           justifyContent="space-between" 
           alignItems="center"
+          mb={2}
         >
           <Typography variant="h4">Workouts</Typography>
           <Button
@@ -183,7 +219,39 @@ export const WorkoutsPage = () => {
             New Workout
           </Button>
         </Box>
-      </div>
+        
+        <Paper sx={{ p: 2 }}>
+          <Box display="flex" gap={2}>
+            <TextField
+              label="Search workouts"
+              variant="outlined"
+              size="small"
+              fullWidth
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              placeholder="Search by notes or exercises..."
+            />
+            <DatePicker
+              label="Start date"
+              value={dateRange.start}
+              onChange={(newValue) => setDateRange(prev => ({ ...prev, start: newValue }))}
+              slotProps={{ textField: { size: 'small' } }}
+            />
+            <DatePicker
+              label="End date"
+              value={dateRange.end}
+              onChange={(newValue) => setDateRange(prev => ({ ...prev, end: newValue }))}
+              slotProps={{ textField: { size: 'small' } }}
+            />
+            <Button 
+              variant="outlined" 
+              onClick={() => setDateRange({ start: null, end: null })}
+            >
+              Clear Filters
+            </Button>
+          </Box>
+        </Paper>
+      </Box>
 
       {loading ? (
         <Typography>Loading workouts...</Typography>

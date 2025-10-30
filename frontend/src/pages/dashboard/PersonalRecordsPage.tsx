@@ -1,15 +1,25 @@
-import { Typography, Paper, Box, Grid, Card, CardContent, Divider, Modal } from '@mui/material';
+import { Typography, Paper, Box, Grid, Card, CardContent, Divider, Modal, TextField } from '@mui/material';
 import { useQuery } from 'react-query';
 import { personalRecordService } from '@/services/personal-record.service';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { ExerciseHistoryGraphs } from '@/components/personal-records/ExerciseHistoryGraphs';
 
 export const PersonalRecordsPage = () => {
   const [selectedExercise, setSelectedExercise] = useState<{ id: number; name: string } | null>(null);
+  const [searchText, setSearchText] = useState('');
   const { data: records, isLoading } = useQuery({
     queryKey: ['personalRecords'],
     queryFn: () => personalRecordService.getPersonalRecords(),
   });
+
+  const filteredRecords = useMemo(() => {
+    if (!records || !searchText.trim()) return records;
+    
+    const searchLower = searchText.toLowerCase();
+    return records.filter(record => 
+      record.exerciseName.toLowerCase().includes(searchLower)
+    );
+  }, [records, searchText]);
 
   if (isLoading) {
     return <Typography>Loading records...</Typography>;
@@ -28,13 +38,27 @@ export const PersonalRecordsPage = () => {
     );
   }
 
+  const displayRecords = filteredRecords || records;
+
   return (
     <Box>
       <Typography variant="h4" gutterBottom>
         Personal Records
       </Typography>
-      <Grid container spacing={2}>
-        {records.map((record) => (
+      
+      <Paper sx={{ p: 2, mb: 3 }}>
+        <TextField
+          label="Search exercises"
+          variant="outlined"
+          size="small"
+          fullWidth
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          placeholder="Search by exercise name..."
+        />
+      </Paper>
+      <Grid container spacing={3}>
+        {displayRecords.map((record) => (
           <Grid item xs={12} sm={6} md={4} key={record.exerciseId}>
             <Card 
               sx={{ 

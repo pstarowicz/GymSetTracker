@@ -14,6 +14,15 @@ export const workoutService = {
     );
   },
 
+  getWorkoutsBetweenDates: (start: Date, end: Date) => {
+    return axiosInstance.get<Workout[]>(`${BASE_URL}/between`, {
+      params: {
+        start: start.toISOString(),
+        end: end.toISOString()
+      }
+    });
+  },
+
   updateWorkout: (id: number, workout: WorkoutRequest) => {
     return axiosInstance.put<Workout>(`${BASE_URL}/${id}`, workout);
   },
