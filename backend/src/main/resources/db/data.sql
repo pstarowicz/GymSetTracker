@@ -19,4 +19,10 @@ INSERT INTO exercises (name, muscle_group, is_custom, created_at) VALUES
     ('Tricep Pushdown', 'Arms', false, CURRENT_TIMESTAMP),
     ('Bicep Curls', 'Arms', false, CURRENT_TIMESTAMP),
     ('Plank', 'Core', false, CURRENT_TIMESTAMP),
+    ('Walking Lunge', 'Legs', false, CURRENT_TIMESTAMP),
+    ('French Press With A Barbell', 'Arms', false, CURRENT_TIMESTAMP),
+    ('Preacher Curls With A Barbell', 'Arms', false, CURRENT_TIMESTAMP),
+    ('Dumbbell Fly', 'Chest', false, CURRENT_TIMESTAMP),
+    ('Seated Cable Row', 'Back', false, CURRENT_TIMESTAMP),
+    ('Lying Leg Curl', 'Legs', false, CURRENT_TIMESTAMP),
     ('Crunches', 'Core', false, CURRENT_TIMESTAMP);
