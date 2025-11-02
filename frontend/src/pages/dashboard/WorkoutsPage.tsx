@@ -53,6 +53,8 @@ export const WorkoutsPage = () => {
     start: null,
     end: null
   });
+  const [singleDate, setSingleDate] = useState<Date | null>(null);
+  const [defaultDatesSet, setDefaultDatesSet] = useState(false);
 
   // Custom styles for the workout page
   const styles = {
@@ -90,10 +92,21 @@ export const WorkoutsPage = () => {
     return Object.values(grouped);
   };
 
+  // Initial load effect
   useEffect(() => {
-    loadWorkouts();
-    loadExercises();
-  }, [page, dateRange.start, dateRange.end]);
+    if (!defaultDatesSet) {
+      loadWorkouts();
+      loadExercises();
+    }
+  }, []); // Run only once on mount
+
+  // Regular update effect
+  useEffect(() => {
+    if (defaultDatesSet) {
+      loadWorkouts();
+      loadExercises();
+    }
+  }, [page, dateRange.start, dateRange.end, singleDate, defaultDatesSet]);
 
   // Debounced text search
   useEffect(() => {
@@ -109,16 +122,67 @@ export const WorkoutsPage = () => {
       setLoading(true);
       let response;
       
-      if (dateRange.start && dateRange.end) {
+      if (singleDate) {
+        // If single date is selected, use that
+        response = await workoutService.getWorkoutsByDate(singleDate);
+        setWorkouts(response.data);
+      } else if (dateRange.start && dateRange.end) {
+        // If date range is selected, use that
         response = await workoutService.getWorkoutsBetweenDates(
           dateRange.start,
           dateRange.end
         );
         setWorkouts(response.data);
       } else {
+        // If no dates selected, show paginated list
         response = await workoutService.getWorkouts(page);
         setWorkouts(response.data.content);
-      }
+
+        // Set default date range if not already set and we have workouts
+        if (!defaultDatesSet && response.data.content.length > 0) {
+          const lastWorkout = response.data.content[0]; // First workout is the most recent due to sorting
+          const lastWorkoutDate = new Date(
+            lastWorkout.date[0],
+            lastWorkout.date[1] - 1,
+            lastWorkout.date[2]
+          );
+          
+          // Set end date to last workout date
+          const endDate = lastWorkoutDate;
+          
+          // Set start date to one year before the last workout
+          const startDate = new Date(lastWorkoutDate);
+          startDate.setFullYear(startDate.getFullYear() - 1);
+          
+          setDateRange({
+            start: startDate,
+            end: endDate
+          });
+          setDefaultDatesSet(true);
+        }
+
+        // Set default date range if not already set and we have workouts
+        if (!defaultDatesSet && response.data.content.length > 0) {
+          const lastWorkout = response.data.content[0]; // First workout is the most recent due to sorting
+          const lastWorkoutDate = new Date(
+            lastWorkout.date[0],
+            lastWorkout.date[1] - 1,
+            lastWorkout.date[2]
+          );
+          
+          // Set end date to last workout date
+          const endDate = lastWorkoutDate;
+          
+          // Set start date to one year before the last workout
+          const startDate = new Date(lastWorkoutDate);
+          startDate.setFullYear(startDate.getFullYear() - 1);
+          
+          setDateRange({
+            start: startDate,
+            end: endDate
+          });
+          setDefaultDatesSet(true);
+        }
 
       // Apply text filter locally
       if (searchText.trim()) {
@@ -132,17 +196,21 @@ export const WorkoutsPage = () => {
           )
         );
       }
-    } catch (error) {
+    }
+    } catch (error: any) {
       console.error('Failed to load workouts:', error);
+      if (error.response?.status === 403) {
+        console.log('Access forbidden. Token might be expired.');
+      }
     } finally {
       setLoading(false);
     }
-  };
+    };
 
   const loadExercises = async () => {
     try {
-      const exercises = await exerciseService.getAllExercises();
-      setExercises(exercises);
+      const exerciseData = await exerciseService.getAllExercises();
+      setExercises(exerciseData);
     } catch (error) {
       console.error('Failed to load exercises:', error);
     }
@@ -221,34 +289,78 @@ export const WorkoutsPage = () => {
         </Box>
         
         <Paper sx={{ p: 2 }}>
-          <Box display="flex" gap={2}>
-            <TextField
-              label="Search workouts"
-              variant="outlined"
-              size="small"
-              fullWidth
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              placeholder="Search by notes or exercises..."
-            />
-            <DatePicker
-              label="Start date"
-              value={dateRange.start}
-              onChange={(newValue) => setDateRange(prev => ({ ...prev, start: newValue }))}
-              slotProps={{ textField: { size: 'small' } }}
-            />
-            <DatePicker
-              label="End date"
-              value={dateRange.end}
-              onChange={(newValue) => setDateRange(prev => ({ ...prev, end: newValue }))}
-              slotProps={{ textField: { size: 'small' } }}
-            />
-            <Button 
-              variant="outlined" 
-              onClick={() => setDateRange({ start: null, end: null })}
+          <Box display="flex" flexDirection="column" gap={2}>
+            {/* Search and Clear Filters row */}
+            <Box display="flex" gap={2} alignItems="center">
+              <TextField
+                label="Search workouts"
+                variant="outlined"
+                size="small"
+                sx={{ flex: 1 }}
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                placeholder="Search by notes or exercises..."
+              />
+              <Button 
+                variant="outlined" 
+                onClick={() => {
+                  setDateRange({ start: null, end: null });
+                  setSingleDate(null);
+                  setSearchText('');
+                }}
+              >
+                Clear Filters
+              </Button>
+            </Box>
+
+            {/* Date filters with responsive layout */}
+            <Box 
+              sx={{ 
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', md: '1fr 2fr' },
+                gap: 2
+              }}
             >
-              Clear Filters
-            </Button>
+              {/* Single date section */}
+              <Box display="flex" gap={2} alignItems="center">
+                <Typography variant="subtitle2" color="textSecondary" sx={{ whiteSpace: 'nowrap' }}>Filter by:</Typography>
+                <DatePicker
+                  label="Single date"
+                  value={singleDate}
+                  onChange={(newValue) => {
+                    setSingleDate(newValue);
+                    if (newValue) {
+                      setDateRange({ start: null, end: null });
+                    }
+                  }}
+                  slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                />
+              </Box>
+
+              {/* Date range section */}
+              <Box display="flex" gap={2} alignItems="center">
+                <Typography variant="subtitle2" color="textSecondary" sx={{ whiteSpace: 'nowrap' }}>or date range:</Typography>
+                <Box display="flex" gap={2} sx={{ flex: 1 }}>
+                  <DatePicker
+                    label="Start date"
+                    value={dateRange.start}
+                    onChange={(newValue) => {
+                      setDateRange(prev => ({ ...prev, start: newValue }));
+                      if (newValue) {
+                        setSingleDate(null);
+                      }
+                    }}
+                    slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                  />
+                  <DatePicker
+                    label="End date"
+                    value={dateRange.end}
+                    onChange={(newValue) => setDateRange(prev => ({ ...prev, end: newValue }))}
+                    slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                  />
+                </Box>
+              </Box>
+            </Box>
           </Box>
         </Paper>
       </Box>

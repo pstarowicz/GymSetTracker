@@ -14,11 +14,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/workouts")
-@CrossOrigin(origins = "*", maxAge = 3600)
+@CrossOrigin(origins = "http://localhost:5173", maxAge = 3600)
 public class WorkoutController {
 
     private final WorkoutService workoutService;
@@ -39,12 +40,49 @@ public class WorkoutController {
     }
 
     @GetMapping("/between")
-    public ResponseEntity<List<Workout>> getWorkoutsBetweenDates(
+    public ResponseEntity<?> getWorkoutsBetweenDates(
             @AuthenticationPrincipal UserDetails currentUser,
-            @RequestParam LocalDateTime start,
-            @RequestParam LocalDateTime end) {
-        User user = customUserDetailsService.loadUserById(Long.parseLong(currentUser.getUsername()));
-        return ResponseEntity.ok(workoutService.getUserWorkoutsBetweenDates(user, start, end));
+            @RequestParam String start,
+            @RequestParam String end) {
+        try {
+            User user = customUserDetailsService.loadUserById(Long.parseLong(currentUser.getUsername()));
+            
+            // Parse dates using DateTimeFormatter
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+            LocalDateTime startDate = LocalDateTime.parse(start, formatter);
+            LocalDateTime endDate = LocalDateTime.parse(end, formatter);
+            
+            System.out.println("Received dates - Start: " + startDate + ", End: " + endDate);
+            System.out.println("Current user: " + currentUser.getUsername());
+            
+            List<Workout> workouts = workoutService.getUserWorkoutsBetweenDates(user, startDate, endDate);
+            return ResponseEntity.ok(workouts);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500)
+                .body("Error: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/date")
+    public ResponseEntity<?> getWorkoutsByDate(
+            @AuthenticationPrincipal UserDetails currentUser,
+            @RequestParam String date) {
+        try {
+            User user = customUserDetailsService.loadUserById(Long.parseLong(currentUser.getUsername()));
+            
+            // Parse date using DateTimeFormatter
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+            LocalDateTime startDate = LocalDateTime.parse(date, formatter);
+            LocalDateTime endDate = startDate.plusDays(1);
+            
+            List<Workout> workouts = workoutService.getUserWorkoutsBetweenDates(user, startDate, endDate);
+            return ResponseEntity.ok(workouts);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500)
+                .body("Error: " + e.getMessage());
+        }
     }
 
     @GetMapping("/{id}")
