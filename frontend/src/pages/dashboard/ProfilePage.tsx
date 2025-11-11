@@ -66,7 +66,7 @@ export const ProfilePage = () => {
   };
 
   return (
-    <Box sx={{ mb: 3 }}>
+    <Box sx={{ mb: 3 }} data-test-id="page--profile">
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
         <Typography variant="h4">Profile</Typography>
       </Box>
@@ -80,6 +80,7 @@ export const ProfilePage = () => {
                 value={profileData.name}
                 onChange={handleChange('name')}
                 disabled={!isEditing}
+                inputProps={{ 'data-test-id': 'input--profile--name' }}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -89,6 +90,7 @@ export const ProfilePage = () => {
                 value={profileData.email}
                 onChange={handleChange('email')}
                 disabled={!isEditing}
+                inputProps={{ 'data-test-id': 'input--profile--email' }}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -99,6 +101,7 @@ export const ProfilePage = () => {
                 value={profileData.weight}
                 onChange={handleChange('weight')}
                 disabled={!isEditing}
+                inputProps={{ 'data-test-id': 'input--profile--weight' }}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -109,6 +112,7 @@ export const ProfilePage = () => {
                 value={profileData.height}
                 onChange={handleChange('height')}
                 disabled={!isEditing}
+                inputProps={{ 'data-test-id': 'input--profile--height' }}
               />
             </Grid>
             <Grid item xs={12}>
@@ -119,6 +123,7 @@ export const ProfilePage = () => {
                     color="primary"
                     onClick={handleSubmit}
                     disabled={isLoading}
+                    data-test-id="button--profile--save"
                   >
                     Save Changes
                   </Button>
@@ -129,6 +134,7 @@ export const ProfilePage = () => {
                       setIsEditing(false);
                     }}
                     disabled={isLoading}
+                    data-test-id="button--profile--cancel"
                   >
                     Cancel
                   </Button>
@@ -138,6 +144,7 @@ export const ProfilePage = () => {
                   variant="contained"
                   color="primary"
                   onClick={() => setIsEditing(true)}
+                  data-test-id="button--profile--edit"
                 >
                   Edit Profile
                 </Button>

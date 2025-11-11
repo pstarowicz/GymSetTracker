@@ -54,9 +54,9 @@ export const ChangePasswordForm = () => {
   };
 
   return (
-    <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-      {success && <Alert severity="success" sx={{ mb: 2 }}>Password changed successfully!</Alert>}
+    <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }} data-test-id="form--change-password">
+      {error && <Alert severity="error" sx={{ mb: 2 }} data-test-id="alert--change-password-error">{error}</Alert>}
+      {success && <Alert severity="success" sx={{ mb: 2 }} data-test-id="alert--change-password-success">Password changed successfully!</Alert>}
       
       <TextField
         fullWidth
@@ -66,6 +66,7 @@ export const ChangePasswordForm = () => {
         value={currentPassword}
         onChange={(e) => setCurrentPassword(e.target.value)}
         required
+        inputProps={{ 'data-test-id': 'input--change-password--current' }}
       />
       
       <TextField
@@ -77,6 +78,7 @@ export const ChangePasswordForm = () => {
         onChange={(e) => setNewPassword(e.target.value)}
         required
         helperText="Password must be at least 8 characters long and contain uppercase, lowercase, number, and special character"
+        inputProps={{ 'data-test-id': 'input--change-password--new' }}
       />
       
       <TextField
@@ -87,6 +89,7 @@ export const ChangePasswordForm = () => {
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
         required
+        inputProps={{ 'data-test-id': 'input--change-password--confirm' }}
       />
       
       <Button
@@ -95,6 +98,7 @@ export const ChangePasswordForm = () => {
         color="primary"
         disabled={isLoading}
         sx={{ mt: 2 }}
+        data-test-id="button--change-password--submit"
       >
         Change Password
       </Button>

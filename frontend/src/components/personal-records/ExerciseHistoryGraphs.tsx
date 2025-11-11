@@ -59,13 +59,13 @@ export const ExerciseHistoryGraphs = ({ exerciseId, exerciseName }: ExerciseHist
   const volumeDomain = calculateYDomain(formattedData.map(d => d.volume));
 
   return (
-    <Box>
+    <Box data-test-id={`chart--exercise-history--${exerciseId}`}>
       <Typography variant="h5" gutterBottom sx={{ mb: 2 }}>
         {exerciseName} Progress
       </Typography>
       
       {/* Max Weight Graph */}
-      <Paper sx={{ p: 2, mb: 2 }} elevation={0} variant="outlined">
+  <Paper data-test-id={`chart--exercise-history--${exerciseId}--max-weight`} sx={{ p: 2, mb: 2 }} elevation={0} variant="outlined">
         <Typography variant="h6" gutterBottom color="primary" sx={{ mb: 1 }}>
           Max Weight Progress
         </Typography>
@@ -120,7 +120,7 @@ export const ExerciseHistoryGraphs = ({ exerciseId, exerciseName }: ExerciseHist
       </Paper>
 
       {/* Volume Graph */}
-      <Paper sx={{ p: 2 }} elevation={0} variant="outlined">
+  <Paper data-test-id={`chart--exercise-history--${exerciseId}--volume`} sx={{ p: 2 }} elevation={0} variant="outlined">
         <Typography variant="h6" gutterBottom color="primary">
           Volume Progress
         </Typography>

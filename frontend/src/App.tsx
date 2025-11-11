@@ -33,6 +33,7 @@ function App() {
           <CssBaseline />
           <AuthProvider>
             <Router>
+              <div data-test-id="app-root">
               <Routes>
                 {/* Public routes */}
                 <Route path="/login" element={<LoginPage />} />
@@ -123,6 +124,7 @@ function App() {
                   element={<Navigate to="/dashboard" replace />}
                 />
               </Routes>
+              </div>
             </Router>
           </AuthProvider>
         </LocalizationProvider>

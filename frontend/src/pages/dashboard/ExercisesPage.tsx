@@ -150,7 +150,7 @@ export const ExercisesPage = () => {
   };
 
   return (
-    <Box sx={styles.container}>
+    <Box sx={styles.container} data-test-id="page--exercises">
       <Box mb={3}>
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
           <Typography variant="h4">Exercises</Typography>
@@ -160,6 +160,7 @@ export const ExercisesPage = () => {
             onClick={() => handleOpen()}
             size="large"
             startIcon={<EditIcon />}
+            data-test-id="button--exercises--add"
           >
             Add Exercise
           </Button>
@@ -174,6 +175,7 @@ export const ExercisesPage = () => {
               fullWidth
               value={filters.search}
               onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+              inputProps={{ 'data-test-id': 'input--exercises--search' }}
               placeholder="Search by name..."
             />
             <FormControl sx={{ minWidth: 200 }}>
@@ -233,7 +235,7 @@ export const ExercisesPage = () => {
           </TableHead>
           <TableBody>
             {filteredExercises.map((exercise) => (
-              <TableRow key={exercise.id}>
+              <TableRow key={exercise.id} data-test-id={`exercise-row-${exercise.id}`}>
                 <TableCell sx={{ fontSize: '1.05rem' }}>{exercise.name}</TableCell>
                 <TableCell sx={{ fontSize: '1.05rem' }}>{exercise.muscleGroup}</TableCell>
                 <TableCell sx={{ fontSize: '1.05rem' }}>
@@ -258,6 +260,7 @@ export const ExercisesPage = () => {
                     disabled={!exercise.isCustom}
                     color="primary"
                     size="large"
+                    data-test-id={`button--exercise-${exercise.id}--edit`}
                   >
                     <EditIcon />
                   </IconButton>
@@ -266,6 +269,7 @@ export const ExercisesPage = () => {
                     disabled={!exercise.isCustom}
                     color="error"
                     size="large"
+                    data-test-id={`button--exercise-${exercise.id}--delete`}
                   >
                     <DeleteIcon />
                   </IconButton>

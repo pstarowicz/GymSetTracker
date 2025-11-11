@@ -5,9 +5,10 @@ interface FormInputProps extends Omit<TextFieldProps, 'name'> {
   name: string;
   control: Control<any>;
   rules?: Record<string, any>;
+  dataTestId?: string;
 }
 
-export const FormInput = ({ name, control, rules, ...props }: FormInputProps) => {
+export const FormInput = ({ name, control, rules, dataTestId, ...props }: FormInputProps) => {
   return (
     <Controller
       name={name}
@@ -18,6 +19,8 @@ export const FormInput = ({ name, control, rules, ...props }: FormInputProps) =>
         <TextField
           {...field}
           {...props}
+          // Provide an opt-in data-test-id for e2e testing
+          data-test-id={dataTestId}
           error={!!error}
           helperText={error?.message}
           fullWidth

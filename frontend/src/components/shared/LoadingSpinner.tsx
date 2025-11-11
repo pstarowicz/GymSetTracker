@@ -3,6 +3,7 @@ import { Box, CircularProgress } from '@mui/material';
 export const LoadingSpinner = () => {
   return (
     <Box
+      data-test-id="loading-spinner"
       sx={{
         display: 'flex',
         justifyContent: 'center',
@@ -11,7 +12,7 @@ export const LoadingSpinner = () => {
         width: '100%'
       }}
     >
-      <CircularProgress />
+      <CircularProgress data-test-id="loading-spinner-progress" />
     </Box>
   );
 };

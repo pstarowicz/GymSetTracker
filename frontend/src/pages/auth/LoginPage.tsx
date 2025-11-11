@@ -71,11 +71,13 @@ export const LoginPage = () => {
           <Box
             component="form"
             onSubmit={handleSubmit(onSubmit)}
+            data-test-id="form--login"
             sx={{ mt: 1, width: '100%' }}
           >
             <FormInput
               name="email"
               control={control}
+              dataTestId="input--login--email"
               label="Email Address"
               autoComplete="email"
               autoFocus
@@ -90,6 +92,7 @@ export const LoginPage = () => {
             <FormInput
               name="password"
               control={control}
+              dataTestId="input--login--password"
               label="Password"
               type="password"
               autoComplete="current-password"
@@ -106,6 +109,7 @@ export const LoginPage = () => {
               type="submit"
               fullWidth
               variant="contained"
+              data-test-id="button--login--submit"
               sx={{ mt: 3, mb: 2 }}
             >
               Sign In

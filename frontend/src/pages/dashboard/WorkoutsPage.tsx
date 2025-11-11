@@ -275,7 +275,7 @@ export const WorkoutsPage = () => {
   };
 
   return (
-    <div>
+    <div data-test-id="page--workouts">
       <Box sx={{ mb: 3 }}>
         <Box 
           display="flex" 
@@ -289,6 +289,7 @@ export const WorkoutsPage = () => {
             startIcon={<AddIcon />}
             onClick={handleCreateWorkout}
             size="large"
+            data-test-id="button--workouts--new"
           >
             New Workout
           </Button>
@@ -306,6 +307,7 @@ export const WorkoutsPage = () => {
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
                 placeholder="Search by notes or exercises..."
+                inputProps={{ 'data-test-id': 'input--workouts--search' }}
               />
               <Button 
                 variant="outlined" 
@@ -379,7 +381,7 @@ export const WorkoutsPage = () => {
         <Paper elevation={2} sx={styles.workoutList}>
           <List>
             {workouts.map((workout, index) => (
-              <div key={workout.id}>
+              <div key={workout.id} data-test-id={`workout-item-${workout.id}`}>
                 {index > 0 && <Divider />}
                 <ListItem
                     sx={{ 
@@ -449,6 +451,7 @@ export const WorkoutsPage = () => {
                           e.stopPropagation();
                           handleEditWorkout(workout);
                         }}
+                        data-test-id={`button--workout-${workout.id}--edit`}
                       >
                         <EditIcon />
                       </IconButton>
@@ -458,6 +461,7 @@ export const WorkoutsPage = () => {
                           handleCopyWorkout(workout);
                         }}
                         color="primary"
+                        data-test-id={`button--workout-${workout.id}--copy`}
                       >
                         <CopyIcon />
                       </IconButton>
@@ -466,6 +470,7 @@ export const WorkoutsPage = () => {
                           e.stopPropagation();
                           handleDeleteWorkout(workout.id);
                         }}
+                        data-test-id={`button--workout-${workout.id}--delete`}
                       >
                         <DeleteIcon />
                       </IconButton>

@@ -41,12 +41,12 @@ export const PersonalRecordsPage = () => {
   const displayRecords = filteredRecords || records;
 
   return (
-    <Box sx={{ mb: 3 }}>
+    <Box sx={{ mb: 3 }} data-test-id="page--personal-records">
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
         <Typography variant="h4">Personal Records</Typography>
       </Box>
 
-      <Paper sx={{ p: 2, mb: 3 }}>
+      <Paper sx={{ p: 2, mb: 3 }} data-test-id="panel--personal-records-search">
         <TextField
           label="Search exercises"
           variant="outlined"
@@ -55,6 +55,7 @@ export const PersonalRecordsPage = () => {
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
           placeholder="Search by exercise name..."
+          inputProps={{ 'data-test-id': 'input--personal-records--search' }}
         />
       </Paper>
       <Grid container spacing={3}>
@@ -68,6 +69,7 @@ export const PersonalRecordsPage = () => {
                 }
               }}
               onClick={() => setSelectedExercise({ id: record.exerciseId, name: record.exerciseName })}
+              data-test-id={`card--personal-record-${record.exerciseId}`}
             >
               <CardContent>
                 <Typography variant="h6" gutterBottom>
@@ -148,7 +150,7 @@ export const PersonalRecordsPage = () => {
           boxShadow: 24,
           p: 3,
           borderRadius: 1,
-        }}>
+        }} data-test-id="modal--exercise-history">
           {selectedExercise && (
             <ExerciseHistoryGraphs
               exerciseId={selectedExercise.id}

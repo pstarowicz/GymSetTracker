@@ -75,11 +75,13 @@ export const RegisterPage = () => {
           <Box
             component="form"
             onSubmit={handleSubmit(onSubmit)}
+            data-test-id="form--register"
             sx={{ mt: 1, width: '100%' }}
           >
             <FormInput
               name="name"
               control={control}
+              dataTestId="input--register--name"
               label="Full Name"
               autoComplete="name"
               autoFocus
@@ -94,6 +96,7 @@ export const RegisterPage = () => {
             <FormInput
               name="email"
               control={control}
+              dataTestId="input--register--email"
               label="Email Address"
               autoComplete="email"
               rules={{
@@ -107,6 +110,7 @@ export const RegisterPage = () => {
             <FormInput
               name="password"
               control={control}
+              dataTestId="input--register--password"
               label="Password"
               type="password"
               autoComplete="new-password"
@@ -128,6 +132,7 @@ export const RegisterPage = () => {
                 <FormInput
                   name="weight"
                   control={control}
+                  dataTestId="input--register--weight"
                   label="Weight (kg)"
                   type="number"
                   rules={{
@@ -146,6 +151,7 @@ export const RegisterPage = () => {
                 <FormInput
                   name="height"
                   control={control}
+                  dataTestId="input--register--height"
                   label="Height (cm)"
                   type="number"
                   rules={{

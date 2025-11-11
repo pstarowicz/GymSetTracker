@@ -78,6 +78,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   return (
     <Box sx={{ display: 'flex' }}>
       <AppBar
+        data-test-id="layout--dashboard"
         position="fixed"
         sx={{
           width: '100%',
@@ -113,6 +114,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             </Typography>
           </Box>
           <Box 
+            data-test-id="nav--profile"
             sx={{ 
               display: 'flex', 
               alignItems: 'center', 
@@ -172,6 +174,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                   py: 1.5,
                   px: 2,
                 }}
+                data-test-id={`nav--${item.text.toLowerCase().replace(/\s+/g, '-')}`}
               >
                 <ListItemIcon sx={{ 
                   color: location.pathname === item.path ? 'primary.main' : 'text.secondary',
@@ -199,6 +202,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 px: 2,
                 color: 'error.main',
               }}
+              data-test-id="button--logout"
             >
               <ListItemIcon sx={{ color: 'inherit', minWidth: 40 }}>
                 <AccountCircle />

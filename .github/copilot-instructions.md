@@ -49,6 +49,10 @@ The project emphasizes minimalism and performance, as it's designed to run on a 
    - Context API for auth state
    - Local state for form handling
 
+3. **Testability / Data attributes**:
+   - When adding new frontend components or form fields, include a stable `data-test-id` attribute on interactive elements to make them easy to target from GUI tests.
+   - Use a consistent kebab-case naming convention scoped by area, e.g. `page--login`, `form--register`, `input--profile--email`, `button--workout--submit`.
+
 ## Development Workflow
 
 1. **Backend Development**:

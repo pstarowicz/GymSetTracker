@@ -158,7 +158,7 @@ export const WorkoutForm = ({ workout, exercises, onSubmit }: WorkoutFormProps) 
   };
 
   return (
-    <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
+    <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }} data-test-id="form--workout">
       <Grid container spacing={3}>
         <Grid item xs={12} sm={6}>
           <DateTimePicker
@@ -319,13 +319,14 @@ export const WorkoutForm = ({ workout, exercises, onSubmit }: WorkoutFormProps) 
           onClick={addSet}
           variant="outlined"
           sx={{ mt: 2 }}
+          data-test-id="button--workout--add-set"
         >
           Add Set
         </Button>
       </Box>
 
       <Box sx={{ mt: 4 }}>
-        <Button type="submit" variant="contained" fullWidth>
+        <Button type="submit" variant="contained" fullWidth data-test-id="button--workout--submit">
           {workout && !workout.isNew ? 'Update Workout' : 'Create Workout'}
         </Button>
       </Box>
