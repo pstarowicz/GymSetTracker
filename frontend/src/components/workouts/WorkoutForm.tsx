@@ -8,6 +8,7 @@ import {
   Typography,
   FormControl,
   Autocomplete,
+  MenuItem,
 } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers';
 import { Add as AddIcon, Delete as DeleteIcon, ContentCopy as CopyIcon } from '@mui/icons-material';
@@ -21,7 +22,9 @@ interface WorkoutFormProps {
 }
 
 export const WorkoutForm = ({ workout, exercises, onSubmit }: WorkoutFormProps) => {
-  const [formData, setFormData] = useState<WorkoutRequest & { workoutDate: Date }>({
+  type LocalSet = (WorkoutSetRequest & { muscleGroup?: string });
+
+  const [formData, setFormData] = useState<WorkoutRequest & { workoutDate: Date; sets: LocalSet[] }>({
     date: new Date().toISOString().slice(0, 16),
     workoutDate: new Date(),
     duration: 0,
@@ -50,11 +53,12 @@ export const WorkoutForm = ({ workout, exercises, onSubmit }: WorkoutFormProps) 
           duration: workout.duration || 0,
           notes: workout.notes || '',
           sets: workout.sets?.map(set => ({
-            exerciseId: set.exercise?.id || 0,
-            reps: set.reps || 0,
-            weight: set.weight || 0,
-            setNumber: set.setNumber || 0,
-          })) || [],
+              exerciseId: set.exercise?.id || 0,
+              reps: set.reps || 0,
+              weight: set.weight || 0,
+              setNumber: set.setNumber || 0,
+              muscleGroup: set.exercise?.muscleGroup || '',
+            })) || [],
         });
       } catch (error) {
         console.error('Error parsing workout date:', error);
@@ -69,6 +73,7 @@ export const WorkoutForm = ({ workout, exercises, onSubmit }: WorkoutFormProps) 
             reps: set.reps || 0,
             weight: set.weight || 0,
             setNumber: set.setNumber || 0,
+            muscleGroup: set.exercise?.muscleGroup || '',
           })) || [],
         });
       }
@@ -83,20 +88,46 @@ export const WorkoutForm = ({ workout, exercises, onSubmit }: WorkoutFormProps) 
     }));
   };
 
-  const handleSetChange = (index: number, field: keyof WorkoutSetRequest, value: number) => {
-    setFormData(prev => ({
-      ...prev,
-      sets: prev.sets.map((set, i) =>
-        i === index ? { ...set, [field]: value } : set
-      ),
-    }));
+  const handleSetChange = (index: number, field: keyof WorkoutSetRequest | 'muscleGroup', value: any) => {
+    setFormData(prev => {
+      return {
+        ...prev,
+        sets: prev.sets.map((set, i) => {
+          if (i !== index) return set;
+
+          // When muscleGroup changes, pick a sensible exercise for that group (first match) or clear
+          if (field === 'muscleGroup') {
+            const mg = value as string;
+            const match = exercises.find(e => e.muscleGroup === mg) || null;
+            return {
+              ...set,
+              muscleGroup: mg,
+              exerciseId: match ? match.id : 0,
+            };
+          }
+
+          // When exerciseId changes, auto-set muscleGroup if not provided
+          if (field === 'exerciseId') {
+            const exId = Number(value) || 0;
+            const ex = exercises.find(e => e.id === exId) || null;
+            return {
+              ...set,
+              exerciseId: exId,
+              muscleGroup: (set as any).muscleGroup || ex?.muscleGroup || '',
+            };
+          }
+
+          return { ...set, [field]: value };
+        }),
+      };
+    });
   };
 
   const addSet = () => {
     setFormData(prev => {
       const lastSet = prev.sets[prev.sets.length - 1];
       const defaultExerciseId = lastSet ? lastSet.exerciseId : exercises[0]?.id || 0;
-      
+      const defaultMuscleGroup = lastSet ? lastSet.muscleGroup || '' : '';
       return {
         ...prev,
         sets: [
@@ -106,6 +137,7 @@ export const WorkoutForm = ({ workout, exercises, onSubmit }: WorkoutFormProps) 
             reps: 0,
             weight: 0,
             setNumber: prev.sets.length + 1,
+            muscleGroup: defaultMuscleGroup,
           },
         ],
       };
@@ -141,9 +173,14 @@ export const WorkoutForm = ({ workout, exercises, onSubmit }: WorkoutFormProps) 
                 }));
               }
             }}
+            ampm={false}
+            minutesStep={5}
             slotProps={{
               textField: {
-                fullWidth: true
+                fullWidth: true,
+                // prevent the picker from showing as if there's an error
+                error: false,
+                helperText: undefined,
               }
             }}
           />
@@ -177,28 +214,54 @@ export const WorkoutForm = ({ workout, exercises, onSubmit }: WorkoutFormProps) 
         </Typography>
         {formData.sets.map((set, index) => (
           <Box key={index} sx={{ display: 'flex', gap: 2, mb: 2, alignItems: 'center' }}>
+            <FormControl sx={{ width: 160 }}>
+              <TextField
+                select
+                label="Muscle Group"
+                value={(set as any).muscleGroup || ''}
+                onChange={(e) => handleSetChange(index, 'muscleGroup', e.target.value)}
+                fullWidth
+                size="small"
+              >
+                <MenuItem value="">All</MenuItem>
+                {Array.from(new Set(exercises.map(e => e.muscleGroup).filter(Boolean))).map(mg => (
+                  <MenuItem key={mg} value={mg}>{mg}</MenuItem>
+                ))}
+              </TextField>
+            </FormControl>
+
             <FormControl sx={{ flexGrow: 1 }}>
               <Autocomplete
+                size="small"
                 value={exercises.find(e => e.id === set.exerciseId) || null}
-                options={exercises}
+                options={exercises.filter(e => !(set as any).muscleGroup || e.muscleGroup === (set as any).muscleGroup)}
                 getOptionLabel={(option) => option.name}
                 renderInput={(params) => (
                   <TextField
                     {...params}
                     label="Exercise"
                     placeholder="Search exercise..."
+                    size="small"
                   />
                 )}
                 onChange={(_, newValue) => {
                   handleSetChange(index, 'exerciseId', newValue?.id || 0);
                 }}
-                isOptionEqualToValue={(option, value) => option.id === value.id}
+                isOptionEqualToValue={(option, value) => !!value && option.id === value.id}
+                slotProps={{
+                  popper: {
+                    // Force the popper to open below the input and disable flipping
+                    placement: 'bottom-start',
+                    modifiers: [{ name: 'flip', enabled: false } as any],
+                  }
+                }}
                 fullWidth
               />
             </FormControl>
             <TextField
               type="number"
               label="Reps"
+              size="small"
               value={set.reps}
               onChange={(e) => handleSetChange(index, 'reps', parseInt(e.target.value))}
               sx={{ width: 100 }}
@@ -206,6 +269,7 @@ export const WorkoutForm = ({ workout, exercises, onSubmit }: WorkoutFormProps) 
             <TextField
               type="number"
               label="Weight"
+              size="small"
               value={set.weight}
               onChange={(e) => handleSetChange(index, 'weight', parseInt(e.target.value))}
               sx={{ width: 100 }}
@@ -219,6 +283,7 @@ export const WorkoutForm = ({ workout, exercises, onSubmit }: WorkoutFormProps) 
                       reps: prev.sets[index].reps,
                       weight: prev.sets[index].weight,
                       setNumber: prev.sets[index].setNumber + 1,
+                      muscleGroup: (prev.sets[index] as any).muscleGroup || '',
                     };
                     
                     // Insert the new set after the current one and update all following set numbers
@@ -227,7 +292,8 @@ export const WorkoutForm = ({ workout, exercises, onSubmit }: WorkoutFormProps) 
                       newSet,
                       ...prev.sets.slice(index + 1).map(set => ({
                         ...set,
-                        setNumber: set.setNumber + 1
+                        setNumber: set.setNumber + 1,
+                        muscleGroup: (set as any).muscleGroup || '',
                       }))
                     ];
                     
