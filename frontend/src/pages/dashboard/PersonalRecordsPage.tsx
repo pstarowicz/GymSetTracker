@@ -27,10 +27,10 @@ export const PersonalRecordsPage = () => {
 
   if (!records?.length) {
     return (
-      <Box>
-        <Typography variant="h4" gutterBottom>
-          Personal Records
-        </Typography>
+      <Box sx={{ mb: 3 }}>
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+          <Typography variant="h4">Personal Records</Typography>
+        </Box>
         <Paper sx={{ p: 2 }}>
           <Typography>No records yet. Start working out to see your personal records!</Typography>
         </Paper>
@@ -41,11 +41,11 @@ export const PersonalRecordsPage = () => {
   const displayRecords = filteredRecords || records;
 
   return (
-    <Box>
-      <Typography variant="h4" gutterBottom>
-        Personal Records
-      </Typography>
-      
+    <Box sx={{ mb: 3 }}>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+        <Typography variant="h4">Personal Records</Typography>
+      </Box>
+
       <Paper sx={{ p: 2, mb: 3 }}>
         <TextField
           label="Search exercises"

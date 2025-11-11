@@ -1,4 +1,4 @@
-import { Typography, Paper, Box, Grid, TextField, Button, Divider } from '@mui/material';
+import { Typography, Paper, Box, Grid, TextField, Button } from '@mui/material';
 import { useAuth } from '@/context/AuthContext';
 import { useState, useEffect } from 'react';
 import { getProfile, updateProfile } from '@/services/profile.service';
@@ -66,10 +66,10 @@ export const ProfilePage = () => {
   };
 
   return (
-    <Box>
-      <Typography variant="h4" gutterBottom>
-        Profile
-      </Typography>
+    <Box sx={{ mb: 3 }}>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+        <Typography variant="h4">Profile</Typography>
+      </Box>
       <Paper sx={{ p: 3 }}>
         {profileData && (
           <Grid container spacing={3}>
