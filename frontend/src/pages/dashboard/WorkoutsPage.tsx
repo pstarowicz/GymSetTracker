@@ -121,26 +121,27 @@ export const WorkoutsPage = () => {
     try {
       setLoading(true);
       let response;
-      
+      let fetchedWorkouts: Workout[] = [];
+
       if (singleDate) {
         // If single date is selected, use that
         response = await workoutService.getWorkoutsByDate(singleDate);
-        setWorkouts(response.data);
+        fetchedWorkouts = response.data || [];
       } else if (dateRange.start && dateRange.end) {
         // If date range is selected, use that
         response = await workoutService.getWorkoutsBetweenDates(
           dateRange.start,
           dateRange.end
         );
-        setWorkouts(response.data);
+        fetchedWorkouts = response.data || [];
       } else {
         // If no dates selected, show paginated list
         response = await workoutService.getWorkouts(page);
-        setWorkouts(response.data.content);
+        fetchedWorkouts = response.data.content || [];
 
         // Set default date range if not already set and we have workouts
-        if (!defaultDatesSet && response.data.content.length > 0) {
-          const lastWorkout = response.data.content[0]; // First workout is the most recent due to sorting
+        if (!defaultDatesSet && fetchedWorkouts.length > 0) {
+          const lastWorkout = fetchedWorkouts[0]; // First workout is the most recent due to sorting
           const lastWorkoutDate = new Date(
             lastWorkout.date[0],
             lastWorkout.date[1] - 1,
@@ -160,43 +161,44 @@ export const WorkoutsPage = () => {
           });
           setDefaultDatesSet(true);
         }
+      }
 
-        // Set default date range if not already set and we have workouts
-        if (!defaultDatesSet && response.data.content.length > 0) {
-          const lastWorkout = response.data.content[0]; // First workout is the most recent due to sorting
-          const lastWorkoutDate = new Date(
-            lastWorkout.date[0],
-            lastWorkout.date[1] - 1,
-            lastWorkout.date[2]
-          );
-          
-          // Set end date to last workout date
-          const endDate = lastWorkoutDate;
-          
-          // Set start date to one year before the last workout
-          const startDate = new Date(lastWorkoutDate);
-          startDate.setFullYear(startDate.getFullYear() - 1);
-          
-          setDateRange({
-            start: startDate,
-            end: endDate
-          });
-          setDefaultDatesSet(true);
-        }
-
-      // Apply text filter locally
+      // Apply text filter locally across notes, exercise names and displayed date
       if (searchText.trim()) {
         const searchLower = searchText.toLowerCase();
-        setWorkouts(prevWorkouts => 
-          prevWorkouts.filter(workout => 
-            workout.notes?.toLowerCase().includes(searchLower) ||
-            workout.sets?.some(set => 
-              set.exercise?.name.toLowerCase().includes(searchLower)
-            )
-          )
-        );
+        const filtered = (fetchedWorkouts || []).filter(workout => {
+          const notesMatch = workout.notes?.toLowerCase().includes(searchLower);
+
+          const exerciseMatch = workout.sets?.some((set: any) =>
+            set.exercise?.name?.toLowerCase().includes(searchLower)
+          );
+
+          let dateStr = '';
+          if (Array.isArray(workout.date) && workout.date.length >= 3) {
+            try {
+              dateStr = new Date(
+                workout.date[0],
+                workout.date[1] - 1,
+                workout.date[2]
+              ).toLocaleDateString(undefined, {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              });
+            } catch (e) {
+              dateStr = '';
+            }
+          }
+          const dateMatch = dateStr.toLowerCase().includes(searchLower);
+
+          return Boolean(notesMatch || exerciseMatch || dateMatch);
+        });
+
+        setWorkouts(filtered);
+      } else {
+        setWorkouts(fetchedWorkouts);
       }
-    }
     } catch (error: any) {
       console.error('Failed to load workouts:', error);
       if (error.response?.status === 403) {
