@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   Typography, 
   Paper, 
@@ -8,7 +7,7 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
+  
   List,
   ListItem,
   ListItemText,
@@ -26,7 +25,7 @@ import {
 import { DatePicker } from '@mui/x-date-pickers';
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, KeyboardArrowDown, KeyboardArrowUp, ContentCopy as CopyIcon } from '@mui/icons-material';
 import { workoutService } from '@/services/workout.service';
-import { Workout, WorkoutRequest } from '@/types/workout';
+import { Workout } from '@/types/workout';
 import { Exercise } from '@/types/exercise';
 import { exerciseService } from '@/services/exercise.service';
 import { WorkoutForm } from '@/components/workouts/WorkoutForm';
@@ -46,13 +45,10 @@ export const WorkoutsPage = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null);
   const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(0);
+  const [page] = useState(0);
   const [expandedWorkoutId, setExpandedWorkoutId] = useState<number | null>(null);
   const [searchText, setSearchText] = useState('');
-  const [dateRange, setDateRange] = useState<{ start: Date | null; end: Date | null }>({
-    start: null,
-    end: null
-  });
+  const [dateRange, setDateRange] = useState<{ start: Date | null; end: Date | null }>({ start: null, end: null });
   const [singleDate, setSingleDate] = useState<Date | null>(null);
   const [defaultDatesSet, setDefaultDatesSet] = useState(false);
 
@@ -92,106 +88,61 @@ export const WorkoutsPage = () => {
     return Object.values(grouped);
   };
 
-  // Initial load effect
-  useEffect(() => {
-    if (!defaultDatesSet) {
-      loadWorkouts();
-      loadExercises();
+  // Helpers moved into component scope for easier access to types/state if needed later
+  const formatWorkoutDate = (w: Workout) => {
+    if (!Array.isArray(w.date) || w.date.length < 3) return '';
+    try {
+      return new Date(w.date[0], w.date[1] - 1, w.date[2]).toLocaleDateString(undefined, {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+      });
+    } catch (e) {
+      return '';
     }
-  }, []); // Run only once on mount
+  };
 
-  // Regular update effect
+  // (time formatting inline in the UI where needed)
+
+  // Load exercises once on mount
   useEffect(() => {
-    if (defaultDatesSet) {
-      loadWorkouts();
-      loadExercises();
-    }
-  }, [page, dateRange.start, dateRange.end, singleDate, defaultDatesSet]);
+    loadExercises();
+  }, []);
 
-  // Debounced text search
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      loadWorkouts();
-    }, 300);
-
-    return () => clearTimeout(handler);
-  }, [searchText]);
-
-  const loadWorkouts = async () => {
+  // Create a stable loadWorkouts so it can be reused by effects and debounce
+  const loadWorkouts = useCallback(async () => {
     try {
       setLoading(true);
-      let response;
+      let response: any;
       let fetchedWorkouts: Workout[] = [];
 
       if (singleDate) {
-        // If single date is selected, use that
         response = await workoutService.getWorkoutsByDate(singleDate);
         fetchedWorkouts = response.data || [];
       } else if (dateRange.start && dateRange.end) {
-        // If date range is selected, use that
-        response = await workoutService.getWorkoutsBetweenDates(
-          dateRange.start,
-          dateRange.end
-        );
+        response = await workoutService.getWorkoutsBetweenDates(dateRange.start, dateRange.end);
         fetchedWorkouts = response.data || [];
       } else {
-        // If no dates selected, show paginated list
         response = await workoutService.getWorkouts(page);
-        fetchedWorkouts = response.data.content || [];
+        fetchedWorkouts = response.data?.content || [];
 
-        // Set default date range if not already set and we have workouts
         if (!defaultDatesSet && fetchedWorkouts.length > 0) {
-          const lastWorkout = fetchedWorkouts[0]; // First workout is the most recent due to sorting
-          const lastWorkoutDate = new Date(
-            lastWorkout.date[0],
-            lastWorkout.date[1] - 1,
-            lastWorkout.date[2]
-          );
-          
-          // Set end date to last workout date
-          const endDate = lastWorkoutDate;
-          
-          // Set start date to one year before the last workout
-          const startDate = new Date(lastWorkoutDate);
-          startDate.setFullYear(startDate.getFullYear() - 1);
-          
-          setDateRange({
-            start: startDate,
-            end: endDate
-          });
-          setDefaultDatesSet(true);
+          const lastWorkout = fetchedWorkouts[0];
+          if (Array.isArray(lastWorkout.date) && lastWorkout.date.length >= 3) {
+            const lastWorkoutDate = new Date(lastWorkout.date[0], lastWorkout.date[1] - 1, lastWorkout.date[2]);
+            const startDate = new Date(lastWorkoutDate);
+            startDate.setFullYear(startDate.getFullYear() - 1);
+            setDateRange({ start: startDate, end: lastWorkoutDate });
+            setDefaultDatesSet(true);
+          }
         }
       }
 
-      // Apply text filter locally across notes, exercise names and displayed date
       if (searchText.trim()) {
         const searchLower = searchText.toLowerCase();
         const filtered = (fetchedWorkouts || []).filter(workout => {
           const notesMatch = workout.notes?.toLowerCase().includes(searchLower);
-
-          const exerciseMatch = workout.sets?.some((set: any) =>
-            set.exercise?.name?.toLowerCase().includes(searchLower)
-          );
-
-          let dateStr = '';
-          if (Array.isArray(workout.date) && workout.date.length >= 3) {
-            try {
-              dateStr = new Date(
-                workout.date[0],
-                workout.date[1] - 1,
-                workout.date[2]
-              ).toLocaleDateString(undefined, {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              });
-            } catch (e) {
-              dateStr = '';
-            }
-          }
-          const dateMatch = dateStr.toLowerCase().includes(searchLower);
-
+          const exerciseMatch = workout.sets?.some((set: any) => set.exercise?.name?.toLowerCase().includes(searchLower));
+          const dateStr = formatWorkoutDate(workout).toLowerCase();
+          const dateMatch = dateStr.includes(searchLower);
           return Boolean(notesMatch || exerciseMatch || dateMatch);
         });
 
@@ -207,12 +158,26 @@ export const WorkoutsPage = () => {
     } finally {
       setLoading(false);
     }
-    };
+  }, [page, dateRange.start, dateRange.end, singleDate, defaultDatesSet, searchText]);
+
+  // Load workouts when paging or dates change (search handled below with debounce)
+  useEffect(() => {
+    loadWorkouts();
+  }, [loadWorkouts]);
+
+  // Debounced searchText -> call loadWorkouts after 300ms
+  useEffect(() => {
+    const t = setTimeout(() => loadWorkouts(), 300);
+    return () => clearTimeout(t);
+  }, [searchText, loadWorkouts]);
+
+  
 
   const loadExercises = async () => {
     try {
       const exerciseData = await exerciseService.getAllExercises();
-      setExercises(exerciseData);
+      // service likely returns array; keep original assignment
+      setExercises(exerciseData as Exercise[]);
     } catch (error) {
       console.error('Failed to load exercises:', error);
     }
@@ -260,13 +225,12 @@ export const WorkoutsPage = () => {
 
   const handleDeleteWorkout = async (id: number | undefined) => {
     if (!id) return;
-    if (window.confirm('Are you sure you want to delete this workout?')) {
-      try {
-        await workoutService.deleteWorkout(id);
-        loadWorkouts();
-      } catch (error) {
-        console.error('Failed to delete workout:', error);
-      }
+    if (!window.confirm('Are you sure you want to delete this workout?')) return;
+    try {
+      await workoutService.deleteWorkout(id);
+      loadWorkouts();
+    } catch (error) {
+      console.error('Failed to delete workout:', error);
     }
   };
 
