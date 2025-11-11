@@ -209,9 +209,9 @@ export const ExercisesPage = () => {
             </FormControl>
             <Button
               variant="outlined"
-              size="small"
+              size="medium"
               onClick={() => setFilters({ search: '', muscleGroup: '', type: '' })}
-              sx={{ height: 40, minWidth: 120 }}
+              sx={{ minWidth: 120 }}
               data-test-id="button--exercises--clear-filters"
             >
               Clear Filters
