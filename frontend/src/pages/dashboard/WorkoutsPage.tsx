@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from 'react-query';
 import { 
   Typography, 
   Paper, 
@@ -102,86 +103,122 @@ export const WorkoutsPage = () => {
 
   // (time formatting inline in the UI where needed)
 
-  // Load exercises once on mount
-  useEffect(() => {
-    loadExercises();
-  }, []);
+  // Exercises are loaded with React Query below.
 
-  // Create a stable loadWorkouts so it can be reused by effects and debounce
-  const loadWorkouts = useCallback(async () => {
-    try {
-      setLoading(true);
-      let response: any;
-      let fetchedWorkouts: Workout[] = [];
+  // Use React Query for workouts and exercises. Keep local state for UI-level filters/search.
+  const queryClient = useQueryClient();
 
-      if (singleDate) {
-        response = await workoutService.getWorkoutsByDate(singleDate);
-        fetchedWorkouts = response.data || [];
-      } else if (dateRange.start && dateRange.end) {
-        response = await workoutService.getWorkoutsBetweenDates(dateRange.start, dateRange.end);
-        fetchedWorkouts = response.data || [];
-      } else {
-        response = await workoutService.getWorkouts(page);
-        fetchedWorkouts = response.data?.content || [];
+  // 1) Page-based workouts (initial list)
+  const { data: pageData, isLoading: isPageLoading } = useQuery(
+    ['workouts', page],
+    () => workoutService.getWorkouts(page).then(res => res.data),
+    {
+      staleTime: 1000 * 60, // 1 minute
+      onSuccess: (data) => {
+        const fetchedWorkouts: Workout[] = data?.content || [];
+        // Apply current searchText locally
+        if (searchText.trim()) {
+          const searchLower = searchText.toLowerCase();
+          const filtered = (fetchedWorkouts || []).filter(workout => {
+            const notesMatch = workout.notes?.toLowerCase().includes(searchLower);
+            const exerciseMatch = workout.sets?.some((set: any) => set.exercise?.name?.toLowerCase().includes(searchLower));
+            const dateStr = formatWorkoutDate(workout).toLowerCase();
+            const dateMatch = dateStr.includes(searchLower);
+            return Boolean(notesMatch || exerciseMatch || dateMatch);
+          });
+          setWorkouts(filtered);
+        } else {
+          setWorkouts(fetchedWorkouts);
+        }
 
+        // Compute and set default date range from initial results, but do NOT trigger a refetch
         if (!defaultDatesSet && fetchedWorkouts.length > 0) {
           const lastWorkout = fetchedWorkouts[0];
           if (Array.isArray(lastWorkout.date) && lastWorkout.date.length >= 3) {
             const lastWorkoutDate = new Date(lastWorkout.date[0], lastWorkout.date[1] - 1, lastWorkout.date[2]);
             const startDate = new Date(lastWorkoutDate);
             startDate.setFullYear(startDate.getFullYear() - 1);
+            // set dateRange for UI only; we don't include dateRange in query keys so no immediate refetch
             setDateRange({ start: startDate, end: lastWorkoutDate });
             setDefaultDatesSet(true);
           }
         }
       }
-
-      if (searchText.trim()) {
-        const searchLower = searchText.toLowerCase();
-        const filtered = (fetchedWorkouts || []).filter(workout => {
-          const notesMatch = workout.notes?.toLowerCase().includes(searchLower);
-          const exerciseMatch = workout.sets?.some((set: any) => set.exercise?.name?.toLowerCase().includes(searchLower));
-          const dateStr = formatWorkoutDate(workout).toLowerCase();
-          const dateMatch = dateStr.includes(searchLower);
-          return Boolean(notesMatch || exerciseMatch || dateMatch);
-        });
-
-        setWorkouts(filtered);
-      } else {
-        setWorkouts(fetchedWorkouts);
-      }
-    } catch (error: any) {
-      console.error('Failed to load workouts:', error);
-      if (error.response?.status === 403) {
-        console.log('Access forbidden. Token might be expired.');
-      }
-    } finally {
-      setLoading(false);
     }
-  }, [page, dateRange.start, dateRange.end, singleDate, defaultDatesSet, searchText]);
+  );
 
-  // Load workouts when paging or dates change (search handled below with debounce)
-  useEffect(() => {
-    loadWorkouts();
-  }, [loadWorkouts]);
+  // 2) Workouts between dates (enabled when user sets both start & end explicitly)
+  const startStr = dateRange.start ? `${dateRange.start.getFullYear()}-${String(dateRange.start.getMonth() + 1).padStart(2, '0')}-${String(dateRange.start.getDate()).padStart(2, '0')}T00:00:00` : '';
+  const endStr = dateRange.end ? `${dateRange.end.getFullYear()}-${String(dateRange.end.getMonth() + 1).padStart(2, '0')}-${String(dateRange.end.getDate()).padStart(2, '0')}T23:59:59` : '';
 
-  // Debounced searchText -> call loadWorkouts after 300ms
+  const { data: betweenData, isLoading: isBetweenLoading } = useQuery(
+    ['workouts-between', startStr, endStr],
+    () => workoutService.getWorkoutsBetweenDates(dateRange.start as Date, dateRange.end as Date).then(res => res.data),
+    {
+      enabled: Boolean(dateRange.start && dateRange.end && defaultDatesSet),
+      onSuccess: (data) => {
+        setWorkouts(data || []);
+      }
+    }
+  );
+
+  // 3) Workouts for single date (enabled when user selects singleDate)
+  const singleDateStr = singleDate ? `${singleDate.getFullYear()}-${String(singleDate.getMonth() + 1).padStart(2, '0')}-${String(singleDate.getDate()).padStart(2, '0')}T00:00:00` : '';
+  const { data: dateData, isLoading: isDateLoading } = useQuery(
+    ['workouts-date', singleDateStr],
+    () => workoutService.getWorkoutsByDate(singleDate as Date).then(res => res.data),
+    {
+      enabled: Boolean(singleDate),
+      onSuccess: (data) => {
+        setWorkouts(data || []);
+      }
+    }
+  );
+
+  // Exercises via React Query
+  const { data: exercisesData, isLoading: isExercisesLoading } = useQuery('exercises', () => exerciseService.getAllExercises(), {
+    staleTime: 1000 * 60,
+    onSuccess: (data) => setExercises(data || [])
+  });
+
+  // Combined loading state
   useEffect(() => {
-    const t = setTimeout(() => loadWorkouts(), 300);
+    setLoading(Boolean(isPageLoading || isBetweenLoading || isDateLoading || isExercisesLoading));
+  }, [isPageLoading, isBetweenLoading, isDateLoading, isExercisesLoading]);
+
+  // Apply search filtering (debounced) to whichever source of workouts is active
+  useEffect(() => {
+    const sourceWorkouts: Workout[] = singleDate
+      ? (dateData || [])
+      : (dateRange.start && dateRange.end)
+        ? (betweenData || [])
+        : (pageData?.content || []);
+
+    const applyFilter = () => {
+      if (!searchText || !searchText.trim()) {
+        setWorkouts(sourceWorkouts);
+        return;
+      }
+
+      const s = searchText.toLowerCase();
+      const filtered = (sourceWorkouts || []).filter(workout => {
+        const notesMatch = workout.notes?.toLowerCase().includes(s);
+        const exerciseMatch = workout.sets?.some((set: any) => set.exercise?.name?.toLowerCase().includes(s));
+        const dateStr = formatWorkoutDate(workout).toLowerCase();
+        const dateMatch = dateStr.includes(s);
+        return Boolean(notesMatch || exerciseMatch || dateMatch);
+      });
+
+      setWorkouts(filtered);
+    };
+
+    const t = setTimeout(applyFilter, 300);
     return () => clearTimeout(t);
-  }, [searchText, loadWorkouts]);
+  }, [searchText, pageData, betweenData, dateData, singleDate, dateRange.start, dateRange.end]);
 
   
 
-  const loadExercises = async () => {
-    try {
-      const exerciseData = await exerciseService.getAllExercises();
-      // service likely returns array; keep original assignment
-      setExercises(exerciseData as Exercise[]);
-    } catch (error) {
-      console.error('Failed to load exercises:', error);
-    }
-  };
+  // (exercise loading handled in the mount effect above)
 
   const handleCreateWorkout = () => {
     setSelectedWorkout(null);
@@ -228,7 +265,10 @@ export const WorkoutsPage = () => {
     if (!window.confirm('Are you sure you want to delete this workout?')) return;
     try {
       await workoutService.deleteWorkout(id);
-      loadWorkouts();
+      // Invalidate queries so React Query will refetch updated lists
+      queryClient.invalidateQueries('workouts');
+      queryClient.invalidateQueries('workouts-between');
+      queryClient.invalidateQueries('workouts-date');
     } catch (error) {
       console.error('Failed to delete workout:', error);
     }
@@ -513,7 +553,10 @@ export const WorkoutsPage = () => {
                   // Otherwise create a new workout
                   await workoutService.createWorkout(workoutData);
                 }
-                loadWorkouts();
+                // Invalidate queries so the lists will be refetched
+                queryClient.invalidateQueries('workouts');
+                queryClient.invalidateQueries('workouts-between');
+                queryClient.invalidateQueries('workouts-date');
                 setOpenDialog(false);
               } catch (error) {
                 console.error('Failed to save workout:', error);
