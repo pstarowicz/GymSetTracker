@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
   Grid,
@@ -46,6 +46,7 @@ export const WorkoutForm = ({ workout, exercises, onSubmit }: WorkoutFormProps) 
         
         setFormData({
           date: formattedDate,
+          workoutDate: date,
           duration: workout.duration || 0,
           notes: workout.notes || '',
           sets: workout.sets?.map(set => ({
@@ -60,6 +61,7 @@ export const WorkoutForm = ({ workout, exercises, onSubmit }: WorkoutFormProps) 
         // Fallback to current date if there's any error
         setFormData({
           date: new Date().toISOString().slice(0, 16),
+          workoutDate: new Date(),
           duration: workout.duration || 0,
           notes: workout.notes || '',
           sets: workout.sets?.map(set => ({
@@ -122,8 +124,6 @@ export const WorkoutForm = ({ workout, exercises, onSubmit }: WorkoutFormProps) 
     e.preventDefault();
     onSubmit(formData);
   };
-
-  const [exerciseSearch, setExerciseSearch] = useState('');
 
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
