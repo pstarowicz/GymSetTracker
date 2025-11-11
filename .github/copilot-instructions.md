@@ -131,3 +131,26 @@ The project emphasizes minimalism and performance, as it's designed to run on a 
 - Feature branches from `main`
 - PR required for main branch changes
 - Follow conventional commits
+
+## Documentation updates (IMPORTANT)
+
+When making changes that affect any of the topics covered in this document (for example: backend package structure, API endpoints, authentication flow, database schema or seeding, frontend structure, run/setup commands, or developer conventions), update the repository `README.md` with a short entry describing the change.
+
+Required README update contents for such changes:
+
+- A one-line summary of what changed (e.g. "Changed auth header handling: now accepts Bearer tokens with prefix 'Bearer '").
+- Files or modules affected (paths).
+- Any new setup, migration, or verification steps needed by a developer or operator.
+
+Suggested README entry template to include in the PR or commit message:
+
+```
+Docs: Update README — <one-line summary>
+
+Details:
+- Affected files: <file1>, <file2>
+- What changed: <short description>
+- How to verify: <test or command>
+```
+
+This ensures the README remains an accurate single-source-of-truth for running and developing the project.
